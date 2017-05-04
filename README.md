@@ -30,3 +30,23 @@
 4. Employ some good ol-fashioned Object Oriented design when writing software for each of the programs (if we split up into two groups, two members should work together to come up with function names and so on which shouldn't be changed)
 
 
+2 page:
+Components:
+ - Wallet
+ - Miner
+ - "Medium" (something allowing uses to all hear messages)
+
+Requirements
+ - use open SSL sockets - javax.net.ssl
+ - use RSA - 2056 & SHA256 hashing
+ - GUI - only if we have time, allow toggling guy on and off so doesn't disrupt program if it doesn't work
+
+Solutions:
+ - Control server running on a machine which distributes messages to all machines
+ - tunnelling with a service allowing TLS - SSL
+
+Things to do!
+ - Read Beej network programming with sockets
+ - look into SSL sockets and multiuser servers via sockets
+ - look into speeds of proof of work on lab machines
+
