@@ -53,3 +53,21 @@ Miner:
 - Miner handles its connection, reports errors, does operations on transactions
     **Needs to store block chain**
         - Use JSON
+Components:
+ - Wallet
+ - Miner
+ - "Medium" (something allowing uses to all hear messages)
+
+Requirements
+ - use open SSL sockets - javax.net.ssl
+ - use RSA - 2056 & SHA256 hashing
+ - GUI - only if we have time, allow toggling guy on and off so doesn't disrupt program if it doesn't work
+
+Solutions:
+ - Control server running on a machine which distributes messages to all machines
+ - tunnelling with a service allowing TLS - SSL
+
+Things to do!
+ - Read Beej network programming with sockets
+ - look into SSL sockets and multiuser servers via sockets
+ - look into speeds of proof of work on lab machines
