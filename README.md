@@ -28,3 +28,5 @@
 2. Design how the wallet and miner will interact with one another.
 3. Start working on which each of these programs (perhaps divide up the work, but not make it a rigid restriction).
 4. Employ some good ol-fashioned Object Oriented design when writing software for each of the programs (if we split up into two groups, two members should work together to come up with function names and so on which shouldn't be changed)
+
+
