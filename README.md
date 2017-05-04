@@ -29,4 +29,27 @@
 3. Start working on which each of these programs (perhaps divide up the work, but not make it a rigid restriction).
 4. Employ some good ol-fashioned Object Oriented design when writing software for each of the programs (if we split up into two groups, two members should work together to come up with function names and so on which shouldn't be changed)
 
+## Ideas
 
+Control Server:
+- SSL Sockets
+- Multi user
+- Error handlings
+    - Allows clients to report errors?
+- GUI should be unnecessary
+
+Wallet:
+- SSL Sockets
+- Allows creation of transactions
+- Updates wallet
+    - Asks other user for most up to date block chain
+- GUI if we have time
+
+Miner:
+- SSL Socket
+- Listens for transactions, adds to block, proof of work then sends updated block chain to other miners and to wallets.
+- Revieves its own rewards
+    - Show this via having another wallet open which is for miner and show they get rewards (not specificed but good addition)
+- Miner handles its connection, reports errors, does operations on transactions
+    **Needs to store block chain**
+        - Use JSON
