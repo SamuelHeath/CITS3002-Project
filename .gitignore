@@ -17,3 +17,11 @@ hs_err_pid*
 /Miner/build.xml
 /Miner/manifest.mf
 /Miner/nbproject/
+/Wallet/nbproject/private/
+Wallet/build.xml
+Wallet/manifest.mf
+Wallet/lib/nblibraries.properties
+Wallet/nbproject
+/Wallet/build/
+/Wallet/dist/
+Wallet/build/built-jar.properties
