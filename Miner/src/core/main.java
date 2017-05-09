@@ -12,7 +12,9 @@ public class main {
     public static void main(String[] args) {
         Miner m;
         if (args.length == 1) {
-             m = new Miner(Integer.parseInt(args[0]));
+            m = new Miner();
+            Server s = new Server(Integer.parseInt(args[0]));
+            new Thread(s).start();
         } else {
             System.out.println("Please enter atleast 1 arguments");
             System.exit(0);

@@ -1,89 +1,95 @@
 package core;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import javax.net.ServerSocketFactory;
-
 import net.Message;
 
 /**
  *
  * @author Samuel Heath
  */
-public class Server {
+public class Server implements Runnable {
     
     private static int NETWORK_PORT; // Port on which the server listens
-    
+    private static final ArrayList<ConnectionWorker> CONNECTIONS = new ArrayList(10);
+    private ServerSocketFactory ServerSockFactory;
+    private ServerSocket ServerSock;
+    private Boolean server_stop = false;
     
     public Server(int NET_PORT) {
         NETWORK_PORT = NET_PORT;
-        System.out.println("Starting Server on port: " + NET_PORT);
-        
-        try {
-            ServerSocketFactory ServerSockFactory = (ServerSocketFactory) ServerSocketFactory.getDefault();
-            ServerSocket ServerSock = (ServerSocket) ServerSockFactory.createServerSocket(NETWORK_PORT);
-            Socket clientSock = (Socket) ServerSock.accept();
-
-            InputStream inputstream = clientSock.getInputStream();
-            InputStreamReader inputstreamreader = new InputStreamReader(inputstream);
-            BufferedReader bufferedreader = new BufferedReader(inputstreamreader);
-            
-            OutputStream outputstream = clientSock.getOutputStream();
-            PrintWriter pwrite = new PrintWriter(outputstream, true);
-
-            String string = null;
-            while ((string = bufferedreader.readLine()) != null) {
-                Message m = new Message(string);
-                System.out.println(m.getRawData());
-                pwrite.println(m.toString());
-                pwrite.flush();
-            }
-        
-        } catch (IOException IOE) { IOE.printStackTrace(); }
-        
-        //run();
+        init();
     }
-    /**
+    
     @Override
     public void run() {
         
-        try {
-        SSLServerSocketFactory ServerSockFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
-        SSLServerSocket ServerSock = (SSLServerSocket) ServerSockFactory.createServerSocket(NETWORK_PORT);
-        SSLSocket clientSock = (SSLSocket) ServerSock.accept();
+        System.out.println("Starting Server on port: " + NETWORK_PORT);
+        Socket clientSock;
         
-        InputStream inputstream = clientSock.getInputStream();
-        InputStreamReader inputstreamreader = new InputStreamReader(inputstream);
-        BufferedReader bufferedreader = new BufferedReader(inputstreamreader);
+        while (hasStopped() != true) {
+            
+            try {
+                clientSock = (Socket) ServerSock.accept();
+                System.out.println("Made it");
+                ConnectionWorker worker = new ConnectionWorker(clientSock);
+                CONNECTIONS.add(worker);
+                new Thread(worker).start();
         
-        String string = null;
-        while ((string = bufferedreader.readLine()) != null) {
-            System.out.println(string);
-            System.out.flush();
+            } catch (IOException IOE) { IOE.printStackTrace(); }
         }
+        stopServer();
+    }
         
+    
+    /**
+     * Stops the server by closing all the ports.
+     */
+    private void stopServer() { 
+        this.server_stop = true; 
+        for (int i = 0; i < CONNECTIONS.size(); i++) { 
+            CONNECTIONS.get(i).closeSocket(); 
+            CONNECTIONS.remove(i);
+            }
+        try {
+            this.ServerSock.close();
+        } catch (IOException e) {}
+    }
+    
+    /**
+     * @return                  Whether the server has stopped.
+     */
+    private Boolean hasStopped() { return this.server_stop; }
+    
+    /**
+     * Initialises the server socket.
+     */
+    private void init() {
+        try {
+            ServerSockFactory = (ServerSocketFactory) ServerSocketFactory.getDefault();
+            ServerSock = (ServerSocket) ServerSockFactory.createServerSocket(NETWORK_PORT);
         } catch (IOException IOE) { IOE.printStackTrace(); }
-        
-    }**/
+    }
     
     /**
      * Broadcasts a message, to all connected clients, via SSL Sockets.
-     * @param message 
+     * @param msg                   The message needing to be broadcasted.
      */
-    public void broadcastMessage(String message) {
-        
+    public static void broadcastMessage(Message msg) {
+        for (ConnectionWorker w:CONNECTIONS) {
+            w.sendMessage(msg);
+        }
     }
+    
+    public static ArrayList<ConnectionWorker> getConnections() { return CONNECTIONS; }
     
     /**
      * @return              NETWORK_PORT, the port the server is running on.
      */
-    public static int getPort() {
+    public int getPort() {
         return NETWORK_PORT;
     }
     

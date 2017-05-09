@@ -11,25 +11,14 @@ import java.security.NoSuchAlgorithmException;
 public class Miner {
 
     /**
-     * Network refers to the 'network' made up of interconnecting computers in
-     * this project.
-     *
-     * @param netPort Network Port
+     * 
      */
-    public Miner(int netPort) {
-        createServer(netPort);
+    public Miner() {
     }
-
+    
     @Override
     public String toString() {
         return "";
-    }
-
-    /**
-     * Use SSLSocket to connect to a server which is running an SSLServerSocket.
-     */
-    private void createServer(int port) {
-        Server s = new Server(port);
     }
 
     /**
