@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import javax.net.ssl.SSLSocket;
 import net.Message;
 
 /**
@@ -20,10 +21,10 @@ import net.Message;
  */
 public class ConnectionWorker implements Runnable {
     
-    private final Socket clientSock;
+    private final SSLSocket clientSock;
     private PrintWriter pwrite;
     
-    public ConnectionWorker(Socket clientSocket) {
+    public ConnectionWorker(SSLSocket clientSocket) {
         this.clientSock = clientSocket;
     }
     
