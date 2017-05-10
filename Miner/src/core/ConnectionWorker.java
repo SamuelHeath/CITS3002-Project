@@ -40,10 +40,21 @@ public class ConnectionWorker implements Runnable {
 
             String string = null;
             while ((string = bufferedreader.readLine()) != null) {
-                Message m = new Message(string);
-                System.out.println(m.getRawData());
-                pwrite.println(m.toString());
-                pwrite.flush();
+                    Message m = new Message(string);
+                    switch (m.getType()) {
+                        case "REQBC":
+                            pwrite.println(Miner.blockChainRequested());
+                            pwrite.flush();
+                            break;
+                        case "BCST":
+                            Server.broadcastMessage(m);
+                            break;
+                        default:
+                            System.out.println(m.getRawData());
+                            pwrite.println(m.toString());
+                            pwrite.flush();
+                            break;
+                    }
             }
         } catch (IOException IOE) {
             Server.getConnections().remove(this.clientSock);

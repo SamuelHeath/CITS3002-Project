@@ -13,6 +13,7 @@ public class main {
         Miner m;
         if (args.length == 1) {
             m = new Miner();
+            new Thread(m).start();
             Server s = new Server(Integer.parseInt(args[0]));
             new Thread(s).start();
         } else {

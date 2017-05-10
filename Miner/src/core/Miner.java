@@ -4,16 +4,34 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import net.Message;
+
 /**
  *
  * @author Sam
  */
-public class Miner {
+public class Miner implements Runnable {
 
     /**
      * 
      */
     public Miner() {
+    }
+    
+    @Override
+    public void run() {
+        long init_time = System.currentTimeMillis();
+        while (true) {
+            if (System.currentTimeMillis() - init_time > 8000){
+                init_time = System.currentTimeMillis();
+                System.out.println("Sent");
+                Server.broadcastMessage(new Message("BCST:Hey"));
+            }
+        }
+    }
+    
+    public static Message blockChainRequested() {
+        return new Message("REQRS:this is le block chain");
     }
     
     @Override
