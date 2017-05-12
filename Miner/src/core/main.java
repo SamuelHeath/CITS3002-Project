@@ -11,7 +11,12 @@ public class main {
      */
     public static void main(String[] args) {
         Miner m;
-        if (args.length == 1) {
+        if (args.length == 2) {
+            m = new Miner(Integer.parseInt(args[1]));
+            new Thread(m).start();
+            Server s = new Server(Integer.parseInt(args[0]));
+            new Thread(s).start();
+        } else if (args.length == 1) {
             m = new Miner();
             new Thread(m).start();
             Server s = new Server(Integer.parseInt(args[0]));

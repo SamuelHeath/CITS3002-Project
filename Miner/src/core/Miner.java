@@ -4,7 +4,6 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.nio.ByteBuffer;
 import java.util.Random;
 
 
@@ -16,16 +15,41 @@ import net.Message;
  */
 public class Miner implements Runnable {
 
+    private int proof_difficulty = 3; //Default difficulty for miner
+    
     /**
-     * 
+     * Default initialisation of the Miner.
      */
     public Miner() {
+        
+    }
+    
+    /**
+     * Initialises the Miner object so that it has a set difficulty
+     * @param difficulty        The number of 0's required at the front of a hashed message.
+     */
+    public Miner(int difficulty) {
+        if (difficulty > 32) {
+            this.proof_difficulty = difficulty;
+        } else this.proof_difficulty = difficulty;
     }
     
     @Override
     public void run() {
+        System.out.println("Miner Difficulty: " + this.proof_difficulty);
+        
+        while (true) {
+            proofOfWork("string");
+        }
+    }
+      
+    /**
+     * Performs the proof of work on some input message.
+     * @param message           The message to be hashed.
+     */
+    public void proofOfWork(String message) {
         long init_time = System.currentTimeMillis();
-        String message = "Akjs89djhfioHA35jhfiwufhuiw543hfiwu87983ubIUBSI5235UBsvbwikvbwuevIUWbi78brwkVBebvKEB";
+        message = "Akjs89djhfioHA35jhfiwufhuidjh24w543hfiw878u87983ubIUBSI5235UBsvbwikvbwuevIUWbi78brwkVBebvKEB";
         byte[] byteNonce = generateNonce();
         byte[] byteMsg = message.getBytes(StandardCharsets.UTF_8);
         byte[] comb = concatNonce(byteMsg,byteNonce);
@@ -33,14 +57,16 @@ public class Miner implements Runnable {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] encodedhash = digest.digest(comb);
-            for (int i = 0; i < encodedhash.length; i++) {System.out.println(encodedhash[i]);}
-            System.out.println("---------------------------------------");
+            System.out.print("Start Hash: ");
+            for (int i = 0; i < encodedhash.length; i++) {System.out.print(encodedhash[i] + " ");}
+            System.out.println("\n---------------------------------------");
             long init_time2 = System.currentTimeMillis();
-            
+            long numHashes = 1;
             while (!checkHash(encodedhash)) {
-                if (System.currentTimeMillis()-init_time2 > 20000) {
-                    System.out.println("Hash of first byte: "+encodedhash[0]);
-                    System.out.println("Current Nonce: "+ nonceToString(byteNonce));
+                numHashes++;
+                if (System.currentTimeMillis()-init_time2 > 30000) {
+                    System.out.println("Hashes/sec "+numHashes/30);
+                    numHashes=0;
                     init_time2 = System.currentTimeMillis();
                 }
                 
@@ -50,22 +76,33 @@ public class Miner implements Runnable {
                 encodedhash = digest.digest(comb);
             }
             firstByte = encodedhash[0];
-            for (int i = 0; i < encodedhash.length; i++) {System.out.println(encodedhash[i]);}
+            System.out.print("End Hash: ");
+            for (int i = 0; i < encodedhash.length; i++) {System.out.print(encodedhash[i] + " ");}
+            System.out.println("\n");
         } catch (NoSuchAlgorithmException NSAE) {}
-        System.out.println("Nonce: " + nonceToString(byteNonce) + " Byte: " + firstByte);
         
-        System.out.println("Time: " + (float)(System.currentTimeMillis() - init_time)/60000 + "min");
+        System.out.println("Time: " + (float)(System.currentTimeMillis() - init_time)/60000 + "min " + "Nonce: " + nonceToString(byteNonce));
         
         if (checkProofOfWork(byteMsg, byteNonce)) System.out.println("True");
     }
-        
+    
+    /**
+     * Checks to see if the hash has set the first n bytes to 0, where n is
+     * equal to the difficulty factor and less than 32 (256bit -> 32 bytes).
+     * @param hash              The SHA-256 hashed message.
+     * @return                  Return true if the hash hasn't been met.
+     */
     public boolean checkHash(byte[] hash) {
-        for (int i = 0; i < 7; i++) {
-            if ((hash[i] & 0xF) != 0) return false;
+        for (int i = 0; i < this.proof_difficulty; i++) {
+            if (hash[i] != 0) return false;
         }
         return true;
     }
     
+    /**
+     * @param nonce             The nonce as a byte array.
+     * @return                  The nonce represented as a string, based on byte representation of characters.
+     */
     public String nonceToString(byte[] nonce) {
         try {
             String nonceStr =  new String(nonce, "UTF-8");
@@ -74,8 +111,11 @@ public class Miner implements Runnable {
         return "";
     }
     
+    /**
+     * @return                  A 4 byte array randomly generated from keyboard characters.
+     */
     public byte[] generateNonce() {
-        String alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String alphabet = "!@#$%^&*()-_=+[{]}|<>:;.,?/'~0123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
         Random r = new Random();
         byte[] nonce = new byte[4];
         for (int i = 0; i < 4; i++) {
@@ -85,17 +125,31 @@ public class Miner implements Runnable {
         return nonce;
     }
     
+    /**
+     * @param message           The message in byte array.
+     * @param nonce             The nonce in byte array.
+     * @return                  Whether or not the proof of work is valid.
+     */
     public boolean checkProofOfWork(byte[] message, byte[] nonce) {
         
         byte[] combined = concatNonce(message,nonce);
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-512");
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] encodedhash = digest.digest(combined);
-            if (encodedhash[0] == 0 && encodedhash[encodedhash.length-1] == 0) { return true; }
+            for (int i=0; i < this.proof_difficulty; i++) {
+                if (encodedhash[i] != 0) return false;
+            }
         } catch (NoSuchAlgorithmException NSAE) {}
-        return false;
+        return true;
     }
     
+    /**
+     * Concatinates the nonce byte array with the message byte array, allowing
+     * SHA-256 to work on the whole array.
+     * @param msg                   The msg byte array.
+     * @param nonce                 The nonce byte array to be appended.
+     * @return                      The resulting byte array after concatination.
+     */
     public byte[] concatNonce(byte[] msg, byte[] nonce) {
         byte[] concatArr = new byte[msg.length+nonce.length];
         System.arraycopy(msg, 0, concatArr, 0, msg.length);
@@ -103,30 +157,11 @@ public class Miner implements Runnable {
         return concatArr;
     }
     
+    /**
+     * @return                  The current longest Blockchain of the system.
+     */
     public static Message blockChainRequested() {
         return new Message("REQRS:this is le block chain");
     }
     
-    @Override
-    public String toString() {
-        return "";
-    }
-
-    /**
-     * Initiates doing a proof of work on a transaction. Just example not
-     * actual code!
-     *
-     * @param message The message to be hashed.
-     */
-    public void proofOfWork(String message) {
-        MessageDigest digest = null;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException NSAE) {
-            NSAE.printStackTrace();
-        }
-        byte[] hash = digest.digest(message.getBytes(StandardCharsets.UTF_8));
-        //Check the first byte and see what the value is.
-        System.out.println(hash[0]);
-    }
 }
