@@ -1,9 +1,11 @@
 package core;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.nio.ByteBuffer;
+import java.util.Random;
 
 
 import net.Message;
@@ -23,11 +25,8 @@ public class Miner implements Runnable {
     @Override
     public void run() {
         long init_time = System.currentTimeMillis();
-        int nonce = 0;
-        String message = "Akjs89djhfioHA35jhfiwufhuiw543hfiwuvcwubIUBSI5235UBsvbwikvbwuevIUWbi78brwkVBebvKEB";
-        ByteBuffer bb = ByteBuffer.allocate(4);
-        bb.putInt(nonce);
-        byte[] byteNonce = bb.array();
+        String message = "Akjs89djhfioHA35jhfiwufhuiw543hfiwu87983ubIUBSI5235UBsvbwikvbwuevIUWbi78brwkVBebvKEB";
+        byte[] byteNonce = generateNonce();
         byte[] byteMsg = message.getBytes(StandardCharsets.UTF_8);
         byte[] comb = concatNonce(byteMsg,byteNonce);
         byte firstByte = 2;
@@ -41,42 +40,58 @@ public class Miner implements Runnable {
             while (!checkHash(encodedhash)) {
                 if (System.currentTimeMillis()-init_time2 > 20000) {
                     System.out.println("Hash of first byte: "+encodedhash[0]);
-                    System.out.println("Current Nonce: "+nonce);
+                    System.out.println("Current Nonce: "+ nonceToString(byteNonce));
                     init_time2 = System.currentTimeMillis();
                 }
-                nonce++;
                 
                 byteMsg = message.getBytes(StandardCharsets.UTF_8);
-                bb.clear();
-                bb.putInt(nonce);
-                byteNonce = bb.array();
+                byteNonce = generateNonce();
                 comb = concatNonce(byteMsg,byteNonce);
                 encodedhash = digest.digest(comb);
             }
             firstByte = encodedhash[0];
             for (int i = 0; i < encodedhash.length; i++) {System.out.println(encodedhash[i]);}
         } catch (NoSuchAlgorithmException NSAE) {}
-        System.out.println("Nonce: " + nonce + " Byte: " + firstByte);
+        System.out.println("Nonce: " + nonceToString(byteNonce) + " Byte: " + firstByte);
         
-        System.out.println("Time: " + (System.currentTimeMillis() - init_time) + "ms");
+        System.out.println("Time: " + (float)(System.currentTimeMillis() - init_time)/60000 + "min");
         
-        //if (checkProofOfWork(byteMsg, nonce)) System.out.println("True");
+        if (checkProofOfWork(byteMsg, byteNonce)) System.out.println("True");
     }
         
     public boolean checkHash(byte[] hash) {
-        for (int i = 0; i <= 1; i++) {
-            if (hash[i] != 0 || hash[hash.length-1-i] != 0) return false;
+        for (int i = 0; i < 7; i++) {
+            if ((hash[i] & 0xF) != 0) return false;
         }
         return true;
     }
     
-    public boolean checkProofOfWork(byte[] message, int nonce) {
+    public String nonceToString(byte[] nonce) {
+        try {
+            String nonceStr =  new String(nonce, "UTF-8");
+            return nonceStr;
+        } catch (UnsupportedEncodingException UEE) {}
+        return "";
+    }
+    
+    public byte[] generateNonce() {
+        String alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        Random r = new Random();
+        byte[] nonce = new byte[4];
+        for (int i = 0; i < 4; i++) {
+            //Convert char - a byte representing ASCII - to a byte
+            nonce[i] = (byte)alphabet.charAt(r.nextInt(alphabet.length()));
+        }
+        return nonce;
+    }
+    
+    public boolean checkProofOfWork(byte[] message, byte[] nonce) {
         
-        byte[] combined = null ;
+        byte[] combined = concatNonce(message,nonce);
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-512");
             byte[] encodedhash = digest.digest(combined);
-            if (encodedhash[0] == 0) { return true; }
+            if (encodedhash[0] == 0 && encodedhash[encodedhash.length-1] == 0) { return true; }
         } catch (NoSuchAlgorithmException NSAE) {}
         return false;
     }
