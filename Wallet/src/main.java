@@ -1,7 +1,9 @@
 import java.io.*;
 import java.net.InetAddress;
+import java.util.Random;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.SSLSession;
 
 import net.Message;
 
@@ -22,6 +24,11 @@ public class main {
                 sslsocket.startHandshake();
                 System.out.println("Connected to Network");
                 
+                System.out.println("Need client authentication = "+sslsocket.getNeedClientAuth());
+		SSLSession sslsesh = sslsocket.getSession();
+		System.out.println("Cipher suite = "+sslsesh.getCipherSuite());
+		System.out.println("Protocol = "+sslsesh.getProtocol());
+                
                 InputStream serverstream = sslsocket.getInputStream();
                 InputStreamReader serverstreamreader = new InputStreamReader(serverstream);
                 BufferedReader bufferedserverreader = new BufferedReader(serverstreamreader);
@@ -38,6 +45,9 @@ public class main {
                     switch (m.getType()) {
                         case "REQRS":
                             System.out.println("Block-Chain Recieved");
+                            //Create a new transaction.
+                            pwrite.println("TRNS:"+generateTransactionString());
+                            pwrite.flush();
                             break;
                         default:
                             System.out.println(m.getRawData());
@@ -50,5 +60,15 @@ public class main {
             System.out.println("You must enter atleast 2 variables");
             System.exit(-1);
         }
+    }
+    
+    public static String generateTransactionString() {
+        String s = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+        Random rchar = new Random();
+        String transaction = "";
+        for (int i = 0; i < 128; i++) {
+            transaction = transaction + String.valueOf(s.charAt(rchar.nextInt(s.length())));
+        }
+        return transaction;
     }
 }

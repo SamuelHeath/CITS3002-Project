@@ -11,7 +11,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.Socket;
 import javax.net.ssl.SSLSocket;
 import net.Message;
 
@@ -27,7 +26,6 @@ public class ConnectionWorker implements Runnable {
     public ConnectionWorker(SSLSocket clientSocket) {
         this.clientSock = clientSocket;
     }
-    
     
     @Override
     public void run() {
@@ -49,6 +47,9 @@ public class ConnectionWorker implements Runnable {
                             break;
                         case "BCST":
                             Server.broadcastMessage(m);
+                            break;
+                        case "TRNS":
+                            Miner.transactionMessage(m);
                             break;
                         default:
                             System.out.println(m.getRawData());

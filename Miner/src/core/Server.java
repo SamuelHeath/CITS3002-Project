@@ -91,6 +91,8 @@ public class Server implements Runnable {
             ServerSockFactory = sc.getServerSocketFactory();
             ServerSock = (SSLServerSocket) ServerSockFactory.createServerSocket(NETWORK_PORT);
             
+            printServerInformation();
+            
         } catch (CertificateException CE) {
 
         } catch (KeyManagementException KME) {
@@ -121,6 +123,14 @@ public class Server implements Runnable {
      */
     public int getPort() {
         return NETWORK_PORT;
+    }
+    
+    private void printServerInformation() {
+        System.out.println("Server socket class: "+this.ServerSock.getClass());
+        System.out.println("Allows SSL Sockets: " + this.ServerSock.getEnableSessionCreation());
+        System.out.println("Use client mode: "+this.ServerSock.getUseClientMode());
+        System.out.println("Need authentication: "+this.ServerSock.getNeedClientAuth());
+        System.out.println("Want authentication: "+this.ServerSock.getWantClientAuth());
     }
     
 }
