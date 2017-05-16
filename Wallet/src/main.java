@@ -46,7 +46,7 @@ public class main {
                         case "REQRS":
                             System.out.println("Block-Chain Recieved");
                             //Create a new transaction.
-                            pwrite.println("TRNS:"+generateTransactionString());
+                            pwrite.println("TRNS:"+genTrnsStr()+"--"+genTrnsStr()+"--"+0.5+"--"+genTrnsStr());
                             pwrite.flush();
                             break;
                         default:
@@ -62,7 +62,7 @@ public class main {
         }
     }
     
-    public static String generateTransactionString() {
+    public static String genTrnsStr() {
         String s = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
         Random rchar = new Random();
         String transaction = "";

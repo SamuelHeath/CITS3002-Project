@@ -82,7 +82,7 @@ public class Server implements Runnable {
             KeyStore ks = KeyStore.getInstance("JKS");
             String current_dir = System.getProperty("user.dir") + "\\keystore.jks";
             ks.load(new FileInputStream(current_dir), "123456".toCharArray());
-            SSLContext sc = SSLContext.getInstance("TLS");
+            SSLContext sc = SSLContext.getInstance("TLSv1.2");
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             kmf.init(ks, "123456".toCharArray());
             

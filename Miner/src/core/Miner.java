@@ -1,25 +1,29 @@
 package core;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import net.Message;
 
 /**
- *
+ * Miner which assembles blocks from a single transaction and performs calculations
+ * to find the hash of the block.
  * @author Sam
  */
 public class Miner implements Runnable {
-
+    
+    private static Block currentBlock;
+    private static String coinBaseAddress = MinerIO.getLastHash();
     private static int proof_difficulty = 3; //Default difficulty for miner
+    private static ArrayList<Transaction> transactions = new ArrayList(1);
     
     /**
      * Default initialisation of the Miner.
      */
     public Miner() {
-        
+        //GET CURRENT BLOCK FROM BLOCKCHAIN. SEE MINERIO
     }
     
     /**
@@ -39,51 +43,46 @@ public class Miner implements Runnable {
       
     /**
      * Performs the proof of work on some input message.
-     * @param message           The message to be hashed.
+     * @param init_block
      * @return                  
      */
-    public static String proofOfWork(String message) {
+    public static void proofOfWork(Block init_block) {
+        Block b = init_block;
+        byte[] header_bytes = blockHeader2Bytes(b);
         long init_time = System.currentTimeMillis();
-        int nonce = 0;
-        int time_stamp = (int) (System.currentTimeMillis() / 1000L);
-        
-        byte[] byteNonce = genByteArrFromInt(nonce);
-        byte[] byteMsg = message.getBytes(StandardCharsets.US_ASCII);
-        byte[] comb = concatByteArr(byteMsg,byteNonce,time_stamp);
         try {
-            
-            
-            MessageDigest hasher = MessageDigest.getInstance("SHA-256");
-            byte[] encodedhash = hasher.digest(hasher.digest(comb));
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            byte[] double_hash = sha256.digest(sha256.digest(header_bytes));
             System.out.print("Start Hash: ");
-            System.out.println(Base58Check.encode(encodedhash));
+            System.out.println(Base58Check.encode(double_hash));
             System.out.println("---------------------------------------");
             long init_time2 = System.currentTimeMillis();
-            long numHashes = 1;
-            while (!checkHashedBits(encodedhash)) {
+            long numHashes = 1; // Stores a count of the number of hashes
+            while (!checkHashedBits(double_hash)) {
+                
+                if (numHashes == Long.MAX_VALUE) {numHashes = 0;}
                 numHashes++;
-                if (System.currentTimeMillis()-init_time2 > 30000) {
+                
+                if (System.currentTimeMillis()-init_time2 > 15000) {
                     System.out.println("Hashes/sec "+numHashes/30);
                     numHashes=0;
                     init_time2 = System.currentTimeMillis();
                 }
-                if (Integer.MAX_VALUE == nonce) {
+                
+                if (Integer.MAX_VALUE == b.getNonce()) {
                     //Add Timestamp & start nonce over again
-                    time_stamp = (int) (System.currentTimeMillis() / 1000L);
-                    nonce = 0;
+                    b.setTimeStamp((int) (System.currentTimeMillis() / 1000L));
+                    b.setNonce(0);
                 }
-                byteMsg = message.getBytes(StandardCharsets.US_ASCII);
-                byteNonce = genByteArrFromInt(++nonce);
-                comb = concatByteArr(byteMsg,byteNonce,time_stamp);
-                hasher.update(comb);
-                encodedhash = hasher.digest();
+                b.setNonce(b.getNonce()+1);
+                header_bytes = blockHeader2Bytes(b);
+                sha256.update(header_bytes);
+                double_hash = sha256.digest();
             }
-            message = Base58Check.encode(encodedhash);
-            System.out.println("End Hash:   " + message);
-            System.out.println("Time: " + (float)(System.currentTimeMillis() - init_time)/60000 + "min " + "Nonce: " + nonce);
+            b.setHash(Base58Check.encode(double_hash));
+            System.out.println("End Hash:   " + b.getHash());
+            System.out.println("Time: " + (float)(System.currentTimeMillis() - init_time)/60000 + "min " + "Nonce: " + b.getNonce());
         } catch (NoSuchAlgorithmException NSAE) {}
-        
-        return message+"--"+nonce+"--"+time_stamp;
     }
     
     /**
@@ -92,11 +91,20 @@ public class Miner implements Runnable {
      * @param hash              The SHA-256 hashed message.
      * @return                  Return true if the hasher hasn't been met.
      */
-    public static boolean checkHashedBits(byte[] hash) {
+    private static boolean checkHashedBits(byte[] hash) {
         for (int i = 0; i < proof_difficulty; i++) {
             if (hash[i] != 0) return false;
         }
+        if ((hash[proof_difficulty] & 0xF) != 0) return false;
         return true;
+    }
+    
+    private static byte[] blockHeader2Bytes(Block b) {
+        byte[] prevHash = b.getPreviousHash().getBytes(StandardCharsets.US_ASCII);
+        byte[] merk = b.getMerkelRoot().getBytes(StandardCharsets.US_ASCII);
+        byte[] timeStamp = genByteArrFromInt(b.getTimeStamp());
+        byte[] nonce = genByteArrFromInt(b.getNonce());
+        return concatByteArr(concatByteArr(concatByteArr(prevHash,merk),timeStamp),nonce);
     }
     
     /**
@@ -121,6 +129,7 @@ public class Miner implements Runnable {
             for (int i=0; i < proof_difficulty; i++) {
                 if (encodedhash[i] != 0) return false;
             }
+            if ((encodedhash[proof_difficulty] & 0xF) != 0) return false;
         } catch (NoSuchAlgorithmException NSAE) {}
         return true;
     }
@@ -128,36 +137,52 @@ public class Miner implements Runnable {
     /**
      * Concatinates the nonce byte array with the message byte array, allowing
      * SHA-256 to work on the whole array.
-     * @param msg                   The msg byte array.
-     * @param nonce                 The nonce byte array to be appended.
+     * @param a                     The msg byte array.
+     * @param b                     The nonce byte array to be appended.
      * @return                      The resulting byte array after concatination.
      */
-    private static byte[] concatByteArr(byte[] msg, byte[] nonce) {
-        byte[] concatArr = new byte[msg.length+nonce.length];
-        System.arraycopy(msg, 0, concatArr, 0, msg.length);
-        System.arraycopy(nonce, 0, concatArr, msg.length, nonce.length);
+    private static byte[] concatByteArr(byte[] a, byte[] b) {
+        byte[] concatArr = new byte[a.length+b.length];
+        System.arraycopy(a, 0, concatArr, 0, b.length);
+        System.arraycopy(b, 0, concatArr, a.length, b.length);
         return concatArr;
     }
     
     /**
-     * Concatinates the nonce byte array with the message byte array, allowing
-     * SHA-256 to work on the whole array.
-     * @param msg                   The msg byte array.
-     * @param nonce                 The nonce byte array to be appended.
-     * @return                      The resulting byte array after concatination.
+     * 
+     * @param transactionMessage
+     * @return 
      */
-    private static byte[] concatByteArr(byte[] msg, byte[] nonce, int time_stamp) {
-        byte[] time = genByteArrFromInt(time_stamp);
-        byte[] concatArr = new byte[msg.length+nonce.length+time.length];
-        System.arraycopy(msg, 0, concatArr, 0, msg.length);
-        System.arraycopy(nonce, 0, concatArr, msg.length, nonce.length);
-        System.arraycopy(time, 0, concatArr, msg.length+nonce.length, time.length);
-        return concatArr;
+    private static Block getTransactionBlock(String transactionMessage) {
+        String[] transComp = transactionMessage.split("--");
+        Transaction t = new Transaction(transComp[0],transComp[1],Float.valueOf(transComp[2]),transComp[3]);
+        if (t.verifySignature()) {
+            transactions.add(t);
+        }
+        
+        Transaction coinBaseTrans = new Transaction(coinBaseAddress,coinBaseAddress,(float)25.0);
+        coinBaseTrans.signCoinBaseTransaction(coinBaseAddress); //Edits the signature field of this object to be signed.
+        transactions.add(0,coinBaseTrans); //Inserts the Coin Base Transaction at the start of the transactions.
+        
+        return new Block(getPreviousHash(),coinBaseAddress,(int)(System.currentTimeMillis()/100L),0,transactions.size());
     }
     
+    /**
+     * @return                      The last hash on the blockchain.
+     */
+    private static String getPreviousHash() {
+        return MinerIO.getLastHash();
+    }
+    
+    /**
+     * 
+     * @param transaction 
+     */
     public static void transactionMessage(Message transaction) {
-        String hashed_transaction = proofOfWork(transaction.getRawData());
-        Server.broadcastMessage(new Message("BCST:"+hashed_transaction));
+        currentBlock = getTransactionBlock(transaction.getRawData());
+        System.out.println(currentBlock.getPreviousHash() + " " + currentBlock.getCoinBase());
+        proofOfWork(currentBlock);
+        Server.broadcastMessage(new Message("BCST:"+currentBlock.blockToString()));
     }
     
     /**
