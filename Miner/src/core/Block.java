@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package core;
 
 /**
@@ -12,38 +7,38 @@ package core;
 public class Block {
     
     private String block_hash;
-    private final Transaction[] transactions;
-    private final String prevHash;
-    private String cBase;
-    private final String merkRoot;
+    private final Transaction[] block_transactions;
+    private final String prev_hash;
+    private final String coin_base;
+    private final String merk_root;
     private int time_stamp;
     private int block_nonce;
     private final int block_transCount;
     
-    public Block(String previousHash, String coinBase, int timeStamp, int nonce, int transCount) {
-        this.transactions = new Transaction[transCount];
-        this.prevHash = previousHash;
-        this.cBase = coinBase;
+    public Block(String previousHash, String coinBase, int timeStamp, int nonce, int transCount, Transaction[] transactions) {
+        this.block_transactions = transactions;
+        this.prev_hash = previousHash;
+        this.coin_base = coinBase;
         this.time_stamp = timeStamp;
         this.block_nonce = nonce;
         this.block_transCount = transCount;
-        this.merkRoot = calcMerkelRoot();
+        this.merk_root = calcMerkelRoot();
     }
     
     private String calcMerkelRoot() {
-        return "";
+        return " ";
     }
     
     public String getMerkelRoot() {
-        return this.merkRoot;
+        return this.merk_root;
     }
     
     public String getPreviousHash() {
-        return this.prevHash;
+        return this.prev_hash;
     }
 
     public String getCoinBase() {
-        return this.cBase;
+        return this.coin_base;
     }
     
     public int getTimeStamp() {
@@ -66,18 +61,18 @@ public class Block {
         StringBuilder sb = new StringBuilder();
         sb.append(this.block_hash);
         sb.append("--");
-        sb.append(this.prevHash);
+        sb.append(this.prev_hash);
         sb.append("--");
-        sb.append(this.merkRoot);
+        sb.append(this.merk_root);
         sb.append("--");
         sb.append(this.time_stamp);
         sb.append("--");
         sb.append(this.block_transCount);
         sb.append("--");
         sb.append(this.block_nonce);
-        for (Transaction t : transactions) {
+        for (Transaction t : block_transactions) {
             sb.append("--");
-            sb.append(t.toString());
+            sb.append(t.transactionToString());
         }
         return sb.toString();
     }

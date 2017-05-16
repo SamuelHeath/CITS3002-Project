@@ -90,6 +90,9 @@ public class Server implements Runnable {
             
             ServerSockFactory = sc.getServerSocketFactory();
             ServerSock = (SSLServerSocket) ServerSockFactory.createServerSocket(NETWORK_PORT);
+            ServerSock.setEnabledCipherSuites(ServerSock.getSupportedCipherSuites());
+            
+            ServerSock.setNeedClientAuth(true);
             
             printServerInformation();
             

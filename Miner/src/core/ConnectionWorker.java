@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package core;
 
 import java.io.BufferedReader;
@@ -11,12 +6,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import net.Message;
 
 /**
- *
- * @author user
+ * @author Samuel Heath
  */
 public class ConnectionWorker implements Runnable {
     
@@ -30,6 +26,10 @@ public class ConnectionWorker implements Runnable {
     @Override
     public void run() {
         try {
+            clientSock.startHandshake();
+            SSLSession sslSession = clientSock.getSession();
+            System.out.println(sslSession.getProtocol());
+            
             InputStream inputstream = clientSock.getInputStream();
             InputStreamReader inputstreamreader = new InputStreamReader(inputstream);
             BufferedReader bufferedreader = new BufferedReader(inputstreamreader);
@@ -42,8 +42,13 @@ public class ConnectionWorker implements Runnable {
                     Message m = new Message(string);
                     switch (m.getType()) {
                         case "REQBC":
-                            pwrite.println(Miner.blockChainRequested());
-                            pwrite.flush();
+                            ArrayList<Message> msgs = Miner.blockChainRequested(m);
+                            if (!msgs.isEmpty()) {
+                                for (int i = 0; i < msgs.size(); i++) {
+                                    pwrite.println(msgs.get(i).toString());
+                                    pwrite.flush();
+                                }
+                            } else { pwrite.println("BCRS:No Chain Available"); pwrite.flush(); }
                             break;
                         case "BCST":
                             Server.broadcastMessage(m);

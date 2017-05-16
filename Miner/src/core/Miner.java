@@ -10,7 +10,7 @@ import net.Message;
 /**
  * Miner which assembles blocks from a single transaction and performs calculations
  * to find the hash of the block.
- * @author Sam
+ * @author Samuel Heath
  */
 public class Miner implements Runnable {
     
@@ -48,7 +48,10 @@ public class Miner implements Runnable {
      */
     public static void proofOfWork(Block init_block) {
         Block b = init_block;
-        byte[] header_bytes = blockHeader2Bytes(b);
+        byte[] prevHash = b.getPreviousHash().getBytes(StandardCharsets.US_ASCII);
+        byte[] merk = b.getMerkelRoot().getBytes(StandardCharsets.US_ASCII);
+        byte[] const_header = concatByteArr(prevHash,merk);
+        byte[] header_bytes = blockHeader2Bytes(b,const_header);
         long init_time = System.currentTimeMillis();
         try {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
@@ -75,7 +78,7 @@ public class Miner implements Runnable {
                     b.setNonce(0);
                 }
                 b.setNonce(b.getNonce()+1);
-                header_bytes = blockHeader2Bytes(b);
+                header_bytes = blockHeader2Bytes(b,const_header);
                 sha256.update(header_bytes);
                 double_hash = sha256.digest();
             }
@@ -83,6 +86,8 @@ public class Miner implements Runnable {
             System.out.println("End Hash:   " + b.getHash());
             System.out.println("Time: " + (float)(System.currentTimeMillis() - init_time)/60000 + "min " + "Nonce: " + b.getNonce());
         } catch (NoSuchAlgorithmException NSAE) {}
+        currentBlock = b;
+        System.out.println(currentBlock.getHash());
     }
     
     /**
@@ -99,12 +104,16 @@ public class Miner implements Runnable {
         return true;
     }
     
-    private static byte[] blockHeader2Bytes(Block b) {
-        byte[] prevHash = b.getPreviousHash().getBytes(StandardCharsets.US_ASCII);
-        byte[] merk = b.getMerkelRoot().getBytes(StandardCharsets.US_ASCII);
+    /**
+     * 
+     * @param b
+     * @param const_bytes                   The bytes in the header that don't change.
+     * @return 
+     */
+    private static byte[] blockHeader2Bytes(Block b, byte[] const_bytes) {
         byte[] timeStamp = genByteArrFromInt(b.getTimeStamp());
         byte[] nonce = genByteArrFromInt(b.getNonce());
-        return concatByteArr(concatByteArr(concatByteArr(prevHash,merk),timeStamp),nonce);
+        return concatByteArr(concatByteArr(const_bytes,timeStamp),nonce);
     }
     
     /**
@@ -163,8 +172,11 @@ public class Miner implements Runnable {
         Transaction coinBaseTrans = new Transaction(coinBaseAddress,coinBaseAddress,(float)25.0);
         coinBaseTrans.signCoinBaseTransaction(coinBaseAddress); //Edits the signature field of this object to be signed.
         transactions.add(0,coinBaseTrans); //Inserts the Coin Base Transaction at the start of the transactions.
-        
-        return new Block(getPreviousHash(),coinBaseAddress,(int)(System.currentTimeMillis()/100L),0,transactions.size());
+        Transaction[] block_transactions = new Transaction[transactions.size()];
+        for (int i = 0; i < block_transactions.length; i++) {
+            block_transactions[i] = transactions.remove(0); //Take off the first element.
+        }
+        return new Block(getPreviousHash(),coinBaseAddress,(int)(System.currentTimeMillis()/100L),0,transactions.size(),block_transactions);
     }
     
     /**
@@ -180,16 +192,28 @@ public class Miner implements Runnable {
      */
     public static void transactionMessage(Message transaction) {
         currentBlock = getTransactionBlock(transaction.getRawData());
-        System.out.println(currentBlock.getPreviousHash() + " " + currentBlock.getCoinBase());
+        System.out.println("Previous Hash: "+currentBlock.getPreviousHash());
+        System.out.println("Coin Base Address: "+currentBlock.getCoinBase());
         proofOfWork(currentBlock);
         Server.broadcastMessage(new Message("BCST:"+currentBlock.blockToString()));
     }
     
     /**
+     * @param msg
      * @return                  The current longest Blockchain of the system.
      */
-    public static Message blockChainRequested() {
-        return new Message("REQRS:this is le block chain");
+    public static ArrayList<Message> blockChainRequested(Message msg) {
+        ArrayList<Message> response = new ArrayList(1);
+        if (msg.getRawData().isEmpty()) {
+            for (Block b: MinerIO.getBlockChain()) {
+                response.add(new Message("BCRS:",b.blockToString()));
+            }
+        } else if (MinerIO.getBlockChain(msg.getRawData()) != null) {
+            for (Block b : MinerIO.getBlockChain(msg.getRawData())) {
+                response.add(new Message("BCRS:",b.blockToString()));
+            }
+        }
+        return response;
     }
     
 }

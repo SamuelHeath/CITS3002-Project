@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package core;
 
 /**
@@ -39,7 +34,20 @@ public class Transaction {
     
     public String signCoinBaseTransaction(String KeySign) {
         if (this.signature == null) { return ""; }
-        return "";
+        return " ";
+    }
+    
+    public String transactionToString() {
+        StringBuilder sb = new StringBuilder("'");
+        sb.append(this.sender_key);
+        sb.append("--");
+        sb.append(this.reciever_key);
+        sb.append("--");
+        sb.append(this.coin_amount);
+        sb.append("--");
+        sb.append(this.signature);
+        sb.append("'");
+        return sb.toString();
     }
     
 }
