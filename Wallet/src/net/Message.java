@@ -4,7 +4,7 @@ public class Message {
 
     private String msg_data;
     // Types of messages: Request Block Chain, Request Response, Broadcast, Transaction
-    public enum Message_Type { REQBC, REQRS, BCST, TRNS };
+    public enum Message_Type { REQBC, BCRS, BCST, TRNS };
     private final Message_Type msg_type;
     
     /**
