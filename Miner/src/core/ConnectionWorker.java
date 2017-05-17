@@ -9,7 +9,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
-import net.Message;
 
 /**
  * @author Samuel Heath
@@ -48,7 +47,7 @@ public class ConnectionWorker implements Runnable {
                                     pwrite.println(msgs.get(i).toString());
                                     pwrite.flush();
                                 }
-                            } else { pwrite.println("BCRS:No Chain Available"); pwrite.flush(); }
+                            } else { sendMessage(new Message("BCRS:No Chain Available")); }
                             break;
                         case "BCST":
                             Server.broadcastMessage(m);

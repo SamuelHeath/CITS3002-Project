@@ -5,7 +5,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import net.Message;
 
 /**
  * Miner which assembles blocks from a single transaction and performs calculations
@@ -49,9 +48,7 @@ public class Miner implements Runnable {
     public static void proofOfWork(Block init_block) {
         Block b = init_block;
         byte[] prevHash = b.getPreviousHash().getBytes(StandardCharsets.US_ASCII);
-        byte[] merk = b.getMerkelRoot().getBytes(StandardCharsets.US_ASCII);
-        byte[] const_header = concatByteArr(prevHash,merk);
-        byte[] header_bytes = blockHeader2Bytes(b,const_header);
+        byte[] header_bytes = blockHeader2Bytes(b,prevHash);
         long init_time = System.currentTimeMillis();
         try {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
@@ -78,7 +75,7 @@ public class Miner implements Runnable {
                     b.setNonce(0);
                 }
                 b.setNonce(b.getNonce()+1);
-                header_bytes = blockHeader2Bytes(b,const_header);
+                header_bytes = blockHeader2Bytes(b,prevHash);
                 sha256.update(header_bytes);
                 double_hash = sha256.digest();
             }
