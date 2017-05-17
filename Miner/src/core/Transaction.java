@@ -40,11 +40,11 @@ public class Transaction {
     public String transactionToString() {
         StringBuilder sb = new StringBuilder("'");
         sb.append(this.sender_key);
-        sb.append("--");
+        sb.append("-");
         sb.append(this.reciever_key);
-        sb.append("--");
+        sb.append("-");
         sb.append(this.coin_amount);
-        sb.append("--");
+        sb.append("-");
         sb.append(this.signature);
         sb.append("'");
         return sb.toString();
