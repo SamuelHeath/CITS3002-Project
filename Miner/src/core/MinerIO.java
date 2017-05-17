@@ -14,10 +14,10 @@ import java.util.Random;
  */
 class MinerIO {
     
-    private static ArrayList<Block> blockChain; // Stores the block chain.
+    private static ArrayList<Block> blockChain = new ArrayList(20);// Stores the block chain.
     
     public MinerIO() {
-        blockChain = new ArrayList(20);
+        
     }
     
     /**

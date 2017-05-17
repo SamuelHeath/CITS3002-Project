@@ -92,7 +92,7 @@ public class Server implements Runnable {
             ServerSock = (SSLServerSocket) ServerSockFactory.createServerSocket(NETWORK_PORT);
             ServerSock.setEnabledCipherSuites(ServerSock.getSupportedCipherSuites());
             
-            ServerSock.setNeedClientAuth(true);
+            //ServerSock.setNeedClientAuth(true);
             
             printServerInformation();
             

@@ -59,10 +59,10 @@ public class main {
                     pwrite.flush();
                     String[] input = args[3].split(" ");
                     if (input.length == 3) {
-                        sign(transaction2Bytes(input[0].getBytes(StandardCharsets.US_ASCII),
+                        /*sign(transaction2Bytes(input[0].getBytes(StandardCharsets.US_ASCII),
                                 input[1].getBytes(StandardCharsets.US_ASCII),
                                 ByteBuffer.allocate(4).putFloat(Float.valueOf(input[2])).array()),
-                                );
+                                );*/
                         pwrite.println("TRNS:"+genTrnsStr()+"--"+genTrnsStr()+"--"+0.5+"--"+genTrnsStr());
                         pwrite.flush();
                     } else { System.out.println("Unknown Command."); System.exit(-1); }
