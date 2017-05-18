@@ -15,8 +15,18 @@ import java.util.Random;
 class MinerIO {
     
     private static ArrayList<Block> blockChain = new ArrayList(20);// Stores the block chain.
+    private static final String CHAIN_FILENAME = "blockChain.dat";
     
     public MinerIO() {
+        
+    }
+    
+    public static void addBlock(Block b) {
+        blockChain.add(0,b);
+        writeBlockChain();
+    }
+    
+    private static void writeBlockChain() {
         
     }
     
@@ -47,13 +57,6 @@ class MinerIO {
     }
     
     /**
-     * @return                  The Coin Base Address which stored somewhere.
-     */
-    public static String getCoinBaseAddress() {
-        return generateAddress();
-    }
-    
-    /**
      * @return                  The hash of the last block in the system.
      */
     public static String getLastHash() {
@@ -80,7 +83,6 @@ class MinerIO {
             File f = new File("block.chain");
             if (!f.exists()) {
                 f.createNewFile();
-                //Store Miner public key.
             }
             FileReader fr = new FileReader(f.getCanonicalFile());
             BufferedReader b = new BufferedReader(fr);

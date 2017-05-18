@@ -12,11 +12,11 @@ public class Base58Check {
     private static BigInteger BASE_SIZE = BigInteger.valueOf(ALPHABET_ARRAY.length);
     private static int CHECKSUM_SIZE = 4;
 
-    public static String encode(byte[] data) throws NoSuchAlgorithmException {
-        return encodePlain(addChecksum(data));
+    public static String encode(byte[] data, boolean isHash) throws NoSuchAlgorithmException {
+        return encodePlain(addChecksum(data),isHash);
     }
 
-    public static String encodePlain(byte[] data) {
+    public static String encodePlain(byte[] data, boolean isHash) {
         BigInteger intData;
 
         try {
@@ -40,16 +40,19 @@ public class Base58Check {
 
         for (int i = 0; i < data.length && data[i] == 0; i++)
         {
-            result = '0' + result;
-            //result = '1' + result; Leading 0's are seen in hashes
+            if (isHash) {
+                result = '0' + result;  //Leading 0's are seen in hashes
+            } else {
+                result = '1' + result;
+            }
         }
 
         return result;
     }
 
 
-    public static byte[] decode(String encoded) throws NoSuchAlgorithmException {
-        byte[] valueWithChecksum = decodePlain(encoded);
+    public static byte[] decode(String encoded, boolean isHash) throws NoSuchAlgorithmException {
+        byte[] valueWithChecksum = decodePlain(encoded,isHash);
 
         byte[] value = verifyAndRemoveChecksum(valueWithChecksum);
 
@@ -60,7 +63,7 @@ public class Base58Check {
         return value;
     }
 
-    public static byte[] decodePlain(String encoded) {
+    public static byte[] decodePlain(String encoded, boolean isHash) {
         if (encoded.length() == 0) {
             return new byte[0];
         }
@@ -71,7 +74,7 @@ public class Base58Check {
         for (int i = 0; i < encoded.length(); i++) {
             char current = encoded.charAt(i);
             
-            if (current == '0') current = '1'; //Flip leading zeroes to 1's
+            if (current == '0' && isHash) current = '1'; //Flip leading zeroes to 1's
             
             int digit = ALPHABET.indexOf(current);
 

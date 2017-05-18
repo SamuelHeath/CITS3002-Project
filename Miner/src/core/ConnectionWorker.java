@@ -56,7 +56,6 @@ public class ConnectionWorker implements Runnable {
                             Miner.transactionMessage(m);
                             break;
                         default:
-                            System.out.println(m.getRawData());
                             pwrite.println(m.toString());
                             pwrite.flush();
                             break;

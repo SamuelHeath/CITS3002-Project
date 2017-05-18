@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class Miner implements Runnable {
     
     private static Block currentBlock;
-    private static String coinBaseAddress = MinerIO.getLastHash();
+    private static String coinBaseAddress;
     private static int proof_difficulty = 3; //Default difficulty for miner
     private static ArrayList<Transaction> transactions = new ArrayList(1);
     
@@ -22,6 +22,9 @@ public class Miner implements Runnable {
      * Default initialisation of the Miner.
      */
     public Miner() {
+        KeyPairGen.generateKeys();
+        coinBaseAddress = KeyPairGen.getPublicKeyAddress();
+        System.out.println("Coin Base Address: "+coinBaseAddress);
         //GET CURRENT BLOCK FROM BLOCKCHAIN. SEE MINERIO
     }
     
@@ -30,9 +33,12 @@ public class Miner implements Runnable {
      * @param difficulty        The number of 0's required at the front of a hashed message.
      */
     public Miner(int difficulty) {
-        if (difficulty > 32) {
-            proof_difficulty = difficulty;
+        if (difficulty > 31) {
+            proof_difficulty = 31;
         } else proof_difficulty = difficulty;
+        KeyPairGen.generateKeys();
+        coinBaseAddress = KeyPairGen.getPublicKeyAddress();
+        System.out.println(coinBaseAddress);
     }
     
     @Override
@@ -54,7 +60,7 @@ public class Miner implements Runnable {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
             byte[] double_hash = sha256.digest(sha256.digest(header_bytes));
             System.out.print("Start Hash: ");
-            System.out.println(Base58Check.encode(double_hash));
+            System.out.println(Base58Check.encode(double_hash,true));
             System.out.println("---------------------------------------");
             long init_time2 = System.currentTimeMillis();
             long numHashes = 1; // Stores a count of the number of hashes
@@ -79,7 +85,7 @@ public class Miner implements Runnable {
                 sha256.update(header_bytes);
                 double_hash = sha256.digest();
             }
-            b.setHash(Base58Check.encode(double_hash));
+            b.setHash(Base58Check.encode(double_hash,true));
             System.out.println("End Hash:   " + b.getHash());
             System.out.println("Time: " + (float)(System.currentTimeMillis() - init_time)/60000 + "min " + "Nonce: " + b.getNonce());
         } catch (NoSuchAlgorithmException NSAE) {}
@@ -160,15 +166,15 @@ public class Miner implements Runnable {
      * @return 
      */
     private static Block getTransactionBlock(String transactionMessage) {
-        String[] transComp = transactionMessage.split("--");
-        Transaction t = new Transaction(transComp[0],transComp[1],Float.valueOf(transComp[2]),transComp[3]);
+        String[] transComp = transactionMessage.replace("'", "").split("-");
+        Transaction t = new Transaction(transComp[0],transComp[1],Double.valueOf(transComp[2]),transComp[3]);
         if (t.verifySignature()) {
             transactions.add(t);
         }
         
-        Transaction coinBaseTrans = new Transaction(coinBaseAddress,coinBaseAddress,(float)25.0);
-        coinBaseTrans.signCoinBaseTransaction(coinBaseAddress); //Edits the signature field of this object to be signed.
-        transactions.add(0,coinBaseTrans); //Inserts the Coin Base Transaction at the start of the transactions.
+        Transaction coinBaseTrans = new Transaction(coinBaseAddress,coinBaseAddress,(double)25.0);
+        coinBaseTrans.signCoinBaseTransaction(); //Edits the signature field of this object to be signed.
+        //transactions.add(0,coinBaseTrans); //Inserts the Coin Base Transaction at the start of the transactions.
         Transaction[] block_transactions = new Transaction[transactions.size()];
         for (int i = 0; i < block_transactions.length; i++) {
             block_transactions[i] = transactions.remove(0); //Take off the first element.
