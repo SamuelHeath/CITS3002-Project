@@ -52,18 +52,23 @@ public class main {
                 OutputStream outputstream = sslsocket.getOutputStream();
                 PrintWriter pwrite = new PrintWriter(outputstream, true);
                 
-               
+                WalletIO wio = new WalletIO();
+                
+                /****
+                 * IMPORTANT
+                 */
+                KeyPairGen.generateKeys(); //Required!
+                System.out.println("Public Key: " + KeyPairGen.getPublicKeyAddress());
+                
                 if (args[2].equals("--trans")) {
                     //Get latest hash off the stored bitcoin ledger, and add to below call.
                     pwrite.println("REQBC:H");
                     pwrite.flush();
                     String[] input = args[3].split(" ");
-                    if (input.length == 3) {
-                        /*sign(transaction2Bytes(input[0].getBytes(StandardCharsets.US_ASCII),
-                                input[1].getBytes(StandardCharsets.US_ASCII),
-                                ByteBuffer.allocate(4).putFloat(Float.valueOf(input[2])).array()),
-                                );*/
-                        pwrite.println("TRNS:"+genTrnsStr()+"--"+genTrnsStr()+"--"+0.5+"--"+genTrnsStr());
+                    if (input.length == 2) {
+                        Transaction t = new Transaction(KeyPairGen.getPublicKeyAddress(),input[0],Double.valueOf(input[1]));
+                        t.signTransaction();
+                        pwrite.println("TRNS:"+t.transactionToString());
                         pwrite.flush();
                     } else { System.out.println("Unknown Command."); System.exit(-1); }
                 } else if (args[2].equals("--update")) {
@@ -100,22 +105,6 @@ public class main {
         System.out.println("You have 25 chriscoin.");
     }
     
-    
-    private static byte[] transaction2Bytes(byte[] sender_key, byte[] receiver_key, byte[] amount) {
-        return concatByteArr(concatByteArr(sender_key,receiver_key),amount);
-    }
-    
-    /**
-     * @param a                     The first byte array.
-     * @param b                     The second byte array to be appended.
-     * @return                      The resulting byte array after concatination.
-     */
-    private static byte[] concatByteArr(byte[] a, byte[] b) {
-        byte[] concatArr = new byte[a.length+b.length];
-        System.arraycopy(a, 0, concatArr, 0, b.length);
-        System.arraycopy(b, 0, concatArr, a.length, b.length);
-        return concatArr;
-    }
     
     private static byte[] sign(byte[] transaction, PrivateKey private_key) {
 		try {

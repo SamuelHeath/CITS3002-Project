@@ -14,11 +14,24 @@ public class WalletIO implements Runnable {
         
     }
     
+    public void updateWallet() {
+        readBlockChain(); //
+    }
+    
     /**
      * Read BlockChain from file and put it into the blockchain arraylist
      */
-    public void readBlockChain() {
+    private void readBlockChain() {
     
+    }
+    
+    private static Transaction[] processTransaction(String[] raw_trans, int num_trans) {
+        Transaction[] tx = new Transaction[num_trans];
+        for (int i =0; i < num_trans; i++) {
+            String[] tx_comps = raw_trans[i].replace("'", "").split("-");
+            tx[i] = new Transaction(tx_comps[0],tx_comps[1],Double.valueOf(tx_comps[2]),tx_comps[3]);
+        }
+        return tx;
     }
     
     /**
@@ -27,8 +40,10 @@ public class WalletIO implements Runnable {
      * @return 
      */
     public static Block constructBlock(String inputText) {
-        Transaction[] transactions = new Transaction[2];
-        return new Block("","",0,0,0,transactions);
+        String[] parts = inputText.split("--");
+        Transaction[] transactions = processTransaction(parts, 2);
+        return new Block(parts[1],parts[2],Integer.parseInt(parts[3]),
+                Integer.parseInt(parts[4]),Integer.parseInt(parts[5]),transactions);
     }
     
 }
