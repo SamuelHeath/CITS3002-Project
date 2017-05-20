@@ -12,7 +12,7 @@ import java.security.SignatureException;
  *
  * @author Samuel Heath
  */
-public class Transaction implements Serializable{
+public class Transaction implements Serializable {
     
     private final String sender_key;
     private final String reciever_key;

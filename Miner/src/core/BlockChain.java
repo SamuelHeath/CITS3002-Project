@@ -9,11 +9,11 @@ import java.util.ArrayList;
  */
 public class BlockChain implements Serializable {
     
-     private static final ArrayList<Block> block_chain = new ArrayList<Block>(20);
+    private ArrayList<Block> block_chain = new ArrayList<Block>(20);
     
-    public BlockChain(Block blockOfGenesis) {
-        block_chain.add(blockOfGenesis);
-    }
+    public BlockChain() {} // Nothing
+     
+    public BlockChain(Block blockOfGenesis) { block_chain.add(blockOfGenesis); }
     
     /**
      * Adds a new block to the front of the BlockChain.
@@ -33,7 +33,7 @@ public class BlockChain implements Serializable {
             }
         }
         //Return null if chain is empty or the chain if false.
-        return chain.isEmpty() ? null : chain;
+        return chain.isEmpty() ? block_chain : chain;
     }
     
     /**

@@ -207,13 +207,13 @@ public class Miner implements Runnable {
      */
     public static ArrayList<Message> blockChainRequested(Message msg) {
         ArrayList<Message> response = new ArrayList(1);
-        if (msg.getRawData().isEmpty()) {
+        if (msg.getRawData().equals("")) {
             for (Block b: MinerIO.getBlockChain().getBlocks()) {
-                response.add(new Message("BCRS:",b.blockToString()));
+                response.add(new Message("BCRS:"+b.blockToString()));
             }
-        } else if (MinerIO.getBlockChain().getBlocksFromLastHash(msg.getRawData()) != null) {
+        } else {
             for (Block b : MinerIO.getBlockChain().getBlocksFromLastHash(msg.getRawData())) {
-                response.add(new Message("BCRS:",b.blockToString()));
+                response.add(new Message("BCRS:"+b.blockToString()));
             }
         }
         return response;
