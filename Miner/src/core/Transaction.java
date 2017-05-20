@@ -1,5 +1,6 @@
 package core;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -11,7 +12,7 @@ import java.security.SignatureException;
  *
  * @author Samuel Heath
  */
-public class Transaction {
+public class Transaction implements Serializable{
     
     private final String sender_key;
     private final String reciever_key;

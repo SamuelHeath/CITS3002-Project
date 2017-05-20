@@ -186,7 +186,7 @@ public class Miner implements Runnable {
      * @return                      The last hash on the blockchain.
      */
     private static String getPreviousHash() {
-        return MinerIO.getLastHash();
+        return MinerIO.getBlockChain().getLastHash();
     }
     
     /**
@@ -208,11 +208,11 @@ public class Miner implements Runnable {
     public static ArrayList<Message> blockChainRequested(Message msg) {
         ArrayList<Message> response = new ArrayList(1);
         if (msg.getRawData().isEmpty()) {
-            for (Block b: MinerIO.getBlockChain()) {
+            for (Block b: MinerIO.getBlockChain().getBlocks()) {
                 response.add(new Message("BCRS:",b.blockToString()));
             }
-        } else if (MinerIO.getBlockChain(msg.getRawData()) != null) {
-            for (Block b : MinerIO.getBlockChain(msg.getRawData())) {
+        } else if (MinerIO.getBlockChain().getBlocksFromLastHash(msg.getRawData()) != null) {
+            for (Block b : MinerIO.getBlockChain().getBlocksFromLastHash(msg.getRawData())) {
                 response.add(new Message("BCRS:",b.blockToString()));
             }
         }

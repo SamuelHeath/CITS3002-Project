@@ -1,10 +1,12 @@
 package core;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Samuel Heath
  */
-public class Block {
+public class Block implements Serializable {
     
     private String block_hash;
     private final Transaction[] block_transactions;

@@ -1,67 +1,53 @@
 package core;
 
-import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Random;
 
 /**
- *
+ * Handles the reading and writing of the serializable block-chain whilst also
+ * facilitating the exportation to other formats e.g. xml and json.
  * @author Samuel Heath
  */
 class MinerIO {
     
-    private static ArrayList<Block> blockChain = new ArrayList(20);// Stores the block chain.
+    private static BlockChain block_chain;
     private static final String CHAIN_FILENAME = "blockChain.dat";
     
     public MinerIO() {
-        
-    }
-    
-    public static void addBlock(Block b) {
-        blockChain.add(0,b);
-        writeBlockChain();
-    }
-    
-    private static void writeBlockChain() {
-        
-    }
-    
-    /**
-     * @return                  The whole block-chain if receiver doesn't have anything.
-     */
-    public static ArrayList<Block> getBlockChain() {
-        return blockChain;
-    }
-    
-    /**
-     * @param last_hash         The last hash the user had stored.
-     * @return                  All blocks on the block chain after the last hash.
-     */
-    public static ArrayList<Block> getBlockChain(String last_hash) {
-        ArrayList<Block> chain = new ArrayList(1);
-        boolean found = false;
-        for (int i = blockChain.size()-1; i >= 0; i--) {
-            if (blockChain.get(i).getHash().equals(last_hash)) {
-                found = true;
-            }
-            if (found) {
-                chain.add(0,blockChain.get(i));
-            }
+        File f = new File(CHAIN_FILENAME);
+        if (f.exists()) {
+            try {
+                //Reads serialized blockchain stored on computer
+                block_chain = readBlockChain(f);
+                System.out.println("Reading Block Chain");
+            } catch (FileNotFoundException FNFE) {}
+        } else {
+             //If object not found then we create Genesis block giving all users 
+            //on the system some coins, then write the object and read it again.
+            Transaction init_trans = new Transaction("0","0",50);
+            Block b = new Block("0","0",(int)(System.currentTimeMillis()/1000L),0,1,new Transaction[] {init_trans});
+            System.out.println("Generated Genisis Block: " + b.blockToString());
+            writeBlockChain(new BlockChain(b));
         }
-        //Return null if chain is empty or the chain if false.
-        return chain.isEmpty() ? null : chain;
+
     }
     
-    /**
-     * @return                  The hash of the last block in the system.
-     */
-    public static String getLastHash() {
-        //return blockChain.get(blockChain.size()-1).getHash();
-        return generateAddress();
+    public static BlockChain getBlockChain() { return block_chain; }
+    
+    private static void writeBlockChain(BlockChain bc) {
+        try {
+            FileOutputStream fos = new FileOutputStream(CHAIN_FILENAME);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(block_chain);
+            
+        } catch (FileNotFoundException FNFE) { FNFE.printStackTrace(); 
+        } catch (IOException IOE) { IOE.printStackTrace(); } 
     }
     
     private static String generateAddress() {
@@ -78,19 +64,16 @@ class MinerIO {
      * Reads the file in the directory and creates the block-chain as Block
      * objects in the blockChain variable.
      */
-    public void readBlockChain() {
+    private BlockChain readBlockChain(File f) throws FileNotFoundException {
         try {
-            File f = new File("block.chain");
-            if (!f.exists()) {
-                f.createNewFile();
-            }
-            FileReader fr = new FileReader(f.getCanonicalFile());
-            BufferedReader b = new BufferedReader(fr);
-            
-            //Close the stream
-            b.close();
-        } catch (FileNotFoundException FNFE) { FNFE.printStackTrace();
-        } catch (IOException IOE) { IOE.printStackTrace(); }
+            FileInputStream fis = new FileInputStream(f);
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            BlockChain bc = (BlockChain) ois.readObject();
+            fis.close();
+            return bc;
+        } catch (IOException IOE) { IOE.printStackTrace(); 
+        } catch (ClassNotFoundException CNFE) {CNFE.printStackTrace();}
+        return null;
     }
     
 }
