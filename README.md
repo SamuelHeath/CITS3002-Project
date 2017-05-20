@@ -3,6 +3,9 @@
 ## Aim
 - Build both wallet and miner software for a bitcoin-esque cryptocurrency.
 
+## Dependencies
+- [BouncyCastle - Provider 157](https://www.bouncycastle.org/latest_releases.html).
+
 ## Requirements
 ### Wallet:
 - Digital Wallet will be a file with a series of records which are successful transactions as recorded on the blockchain.
