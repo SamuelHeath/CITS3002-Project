@@ -168,17 +168,15 @@ public class Miner implements Runnable {
     private static Block getTransactionBlock(String transactionMessage) {
         String[] transComp = transactionMessage.replace("'", "").split("-");
         Transaction t = new Transaction(transComp[0],transComp[1],Double.valueOf(transComp[2]),transComp[3]);
-        if (t.verifySignature()) {
-            transactions.add(t);
-        }
-        
         Transaction coinBaseTrans = new Transaction(coinBaseAddress,coinBaseAddress,(double)25.0);
         coinBaseTrans.signCoinBaseTransaction(); //Edits the signature field of this object to be signed.
-        //transactions.add(0,coinBaseTrans); //Inserts the Coin Base Transaction at the start of the transactions.
-        Transaction[] block_transactions = new Transaction[transactions.size()];
-        for (int i = 0; i < block_transactions.length; i++) {
-            block_transactions[i] = transactions.remove(0); //Take off the first element.
+        if (t.verifySignature() && coinBaseTrans.verifySignature()) {
+            transactions.add(t);
+            transactions.add(0,coinBaseTrans);//Inserts the Coin Base Transaction at the start of the transactions.
         }
+        
+        Transaction[] block_transactions = new Transaction[transactions.size()];
+        for (int i = 0; i < block_transactions.length; i++) { block_transactions[i] = transactions.remove(0); }
         return new Block(getPreviousHash(),coinBaseAddress,(int)(System.currentTimeMillis()/100L),0,transactions.size(),block_transactions);
     }
     
@@ -190,8 +188,8 @@ public class Miner implements Runnable {
     }
     
     /**
-     * 
-     * @param transaction 
+     * Handles a message sent from a wallet to perform a transaction.
+     * @param transaction           The transaction the wallet wants completed.
      */
     public static void transactionMessage(Message transaction) {
         currentBlock = getTransactionBlock(transaction.getRawData());

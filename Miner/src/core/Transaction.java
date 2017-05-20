@@ -2,6 +2,7 @@ package core;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -36,7 +37,13 @@ public class Transaction implements Serializable {
      * @return                      Whether or not the transaction signature is valid.
      */
     public boolean verifySignature() {
-        System.out.println("Verified!");
+        try {
+            Signature s = Signature.getInstance("SHA256withRSA");
+            s.initVerify(KeyPairGen.getPublicKey());
+            s.verify(signature.getBytes(StandardCharsets.US_ASCII));
+        } catch (NoSuchAlgorithmException NSAE) {
+        } catch (SignatureException SE) {
+        } catch (InvalidKeyException IKE) {} 
         return true;
     }
     
