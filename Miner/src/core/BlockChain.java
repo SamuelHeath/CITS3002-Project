@@ -11,7 +11,7 @@ public class BlockChain implements Serializable {
     
     private ArrayList<Block> block_chain = new ArrayList<Block>(20);
     
-    public BlockChain() {} // Nothing
+    public BlockChain() {}      // Empty Constructor.
      
     public BlockChain(Block blockOfGenesis) { block_chain.add(blockOfGenesis); }
     
@@ -41,11 +41,10 @@ public class BlockChain implements Serializable {
      */
     public ArrayList<Block> getBlocks() { return this.block_chain; }
     
-    
     /**
      * @return                  The hash of the last block in the system.
      */
     public String getLastHash() {
-        return block_chain.get(block_chain.size()-1).getHash();
+        return block_chain.get(0).getHash();
     }
 }

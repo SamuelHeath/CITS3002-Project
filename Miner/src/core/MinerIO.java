@@ -27,16 +27,13 @@ class MinerIO {
                 System.out.println("Reading Block Chain");
                 block_chain = readBlockChain(f);
                 System.out.println("Size: " + block_chain.getBlocks().size());
-                for (Block b : block_chain.getBlocks()) {
-                    System.out.println(b.blockToString());
-                }
             } catch (FileNotFoundException FNFE) {}
         } else {
              //If object not found then we create Genesis block giving all users 
             //on the system some coins, then write the object and read it again.
-            Transaction init_trans = new Transaction("000","000",50,"000");
-            Block b = new Block("000","000",(int)(System.currentTimeMillis()/1000L),0,1,new Transaction[] {init_trans});
-            b.setHash("000");
+            Transaction init_trans = new Transaction("0000","0000",50,"0000");
+            Block b = new Block("0000","0000",(int)(System.currentTimeMillis()/1000L),0,1,new Transaction[] {init_trans});
+            b.setHash("0000");
             System.out.println("Generated Genisis Block: " + b.blockToString());
             block_chain = new BlockChain(b);
             writeBlockChain(f);
@@ -45,6 +42,10 @@ class MinerIO {
     }
     
     public static BlockChain getBlockChain() { return block_chain; }
+    
+    public static void write() {
+        writeBlockChain(new File(CHAIN_FILENAME));
+    }
     
     private static void writeBlockChain(File f) {
         try {

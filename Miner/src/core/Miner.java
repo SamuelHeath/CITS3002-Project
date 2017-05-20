@@ -22,7 +22,7 @@ public class Miner implements Runnable {
      * Default initialisation of the Miner.
      */
     public Miner() {
-        KeyPairGen.generateKeys();
+        KeyPairGen.readKeys();
         coinBaseAddress = KeyPairGen.getPublicKeyAddress();
         System.out.println("Coin Base Address: "+coinBaseAddress);
         //GET CURRENT BLOCK FROM BLOCKCHAIN. SEE MINERIO
@@ -36,7 +36,7 @@ public class Miner implements Runnable {
         if (difficulty > 31) {
             proof_difficulty = 31;
         } else proof_difficulty = difficulty;
-        KeyPairGen.generateKeys();
+        KeyPairGen.readKeys();
         coinBaseAddress = KeyPairGen.getPublicKeyAddress();
         System.out.println(coinBaseAddress);
     }
@@ -198,6 +198,8 @@ public class Miner implements Runnable {
         System.out.println("Previous Hash: "+currentBlock.getPreviousHash());
         System.out.println("Coin Base Address: "+currentBlock.getCoinBase());
         proofOfWork(currentBlock);
+        MinerIO.getBlockChain().addBlock(currentBlock);
+        MinerIO.write();
         Server.broadcastMessage(new Message("BCST:"+currentBlock.blockToString()));
     }
     
