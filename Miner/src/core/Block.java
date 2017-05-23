@@ -14,9 +14,9 @@ public class Block implements Serializable {
     private final String coin_base;
     private int time_stamp;
     private int block_nonce;
-    private final int block_transCount;
+    private int block_transCount;
     
-    public Block(String previousHash, String coinBase, int timeStamp, int nonce, int transCount, Transaction[] transactions) {
+    public Block(String previousHash, String coinBase, int timeStamp, int transCount, int nonce, Transaction[] transactions) {
         this.block_transactions = transactions;
         this.prev_hash = previousHash;
         this.coin_base = coinBase;
@@ -39,6 +39,12 @@ public class Block implements Serializable {
     
     public void setTimeStamp(int new_time) {
         this.time_stamp = new_time;
+    }
+    
+    public int getTransactionCount() { return this.block_transCount; }
+    
+    public void setTransactionCount(int transaction_count) {
+        this.block_transCount = transaction_count;
     }
     
     public int getNonce() {

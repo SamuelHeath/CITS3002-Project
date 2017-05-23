@@ -51,7 +51,7 @@ public class Miner implements Runnable {
      * @param init_block
      * @return                  
      */
-    public static void proofOfWork(Block init_block) {
+    public static Block proofOfWork(Block init_block) {
         Block b = init_block;
         byte[] prevHash = b.getPreviousHash().getBytes(StandardCharsets.US_ASCII);
         byte[] header_bytes = blockHeader2Bytes(b,prevHash);
@@ -89,8 +89,7 @@ public class Miner implements Runnable {
             System.out.println("End Hash:   " + b.getHash());
             System.out.println("Time: " + (float)(System.currentTimeMillis() - init_time)/60000 + "min " + "Nonce: " + b.getNonce());
         } catch (NoSuchAlgorithmException NSAE) {}
-        currentBlock = b;
-        System.out.println(currentBlock.getHash());
+        return b;
     }
     
     /**
@@ -168,7 +167,7 @@ public class Miner implements Runnable {
     private static Block getTransactionBlock(String transactionMessage) {
         String[] transComp = transactionMessage.replace("'", "").split("-");
         Transaction t = new Transaction(transComp[0],transComp[1],Double.valueOf(transComp[2]),transComp[3]);
-        Transaction coinBaseTrans = new Transaction(coinBaseAddress,coinBaseAddress,(double)25.0);
+        Transaction coinBaseTrans = new Transaction("000",coinBaseAddress,(double)25.0);
         coinBaseTrans.signCoinBaseTransaction(); //Edits the signature field of this object to be signed.
         if (t.verifySignature() && coinBaseTrans.verifySignature()) {
             transactions.add(t);
@@ -177,7 +176,7 @@ public class Miner implements Runnable {
         
         Transaction[] block_transactions = new Transaction[transactions.size()];
         for (int i = 0; i < block_transactions.length; i++) { block_transactions[i] = transactions.remove(0); }
-        return new Block(getPreviousHash(),coinBaseAddress,(int)(System.currentTimeMillis()/100L),0,transactions.size(),block_transactions);
+        return new Block(getPreviousHash(),coinBaseAddress,(int)(System.currentTimeMillis()/100L),block_transactions.length,0,block_transactions);
     }
     
     /**
@@ -192,13 +191,14 @@ public class Miner implements Runnable {
      * @param transaction           The transaction the wallet wants completed.
      */
     public static void transactionMessage(Message transaction) {
-        currentBlock = getTransactionBlock(transaction.getRawData());
-        System.out.println("Previous Hash: "+currentBlock.getPreviousHash());
-        System.out.println("Coin Base Address: "+currentBlock.getCoinBase());
-        proofOfWork(currentBlock);
-        MinerIO.getBlockChain().addBlock(currentBlock);
+        Block currBlock = getTransactionBlock(transaction.getRawData());
+        System.out.println("Transactions:"+currBlock.getTransactionCount());
+        System.out.println("Previous Hash: "+currBlock.getPreviousHash());
+        System.out.println("Coin Base Address: "+currBlock.getCoinBase());
+        currBlock = proofOfWork(currBlock);
+        MinerIO.getBlockChain().addBlock(currBlock);
         MinerIO.write();
-        Server.broadcastMessage(new Message("BCST:"+currentBlock.blockToString()));
+        Server.broadcastMessage(new Message("BCST:"+currBlock.blockToString()));
     }
     
     /**

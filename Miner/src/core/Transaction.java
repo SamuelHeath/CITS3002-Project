@@ -47,8 +47,10 @@ public class Transaction implements Serializable {
         return true;
     }
     
-    private static byte[] transaction2Bytes(byte[] sender_key, byte[] receiver_key, byte[] amount) {
-        return concatByteArr(concatByteArr(sender_key,receiver_key),amount);
+    
+    
+    private static byte[] transaction2Bytes(byte[] receiver_key, byte[] amount) {
+        return concatByteArr(receiver_key,amount);
     }
     
     /**
@@ -67,7 +69,7 @@ public class Transaction implements Serializable {
         try {
             Signature s = Signature.getInstance("SHA256withRSA");
             s.initSign(KeyPairGen.getPrivateKey());
-            s.update(transaction2Bytes(sender_key.getBytes(),reciever_key.getBytes(),ByteBuffer.allocate(8).putDouble(coin_amount).array()));
+            s.update(transaction2Bytes(reciever_key.getBytes(),ByteBuffer.allocate(8).putDouble(coin_amount).array()));
             byte[] sig = s.sign();
             this.signature = Base58Check.encode(sig,false);
         } catch (NoSuchAlgorithmException NSAE) {
