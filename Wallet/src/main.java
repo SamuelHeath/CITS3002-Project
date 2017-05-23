@@ -25,7 +25,7 @@ public class main {
         //PrivateKey privKey = (PrivateKey) keyStore.getKey("my-private-key", "123456".toCharArray());
         if (args.length >= 3) {
             try {
-                String current_dir = System.getProperty("user.dir") + "\\cacerts.jks";
+                String current_dir = System.getProperty("user.dir") + "/cacerts.jks";
                 System.out.println(current_dir);
                 System.setProperty("javax.net.ssl.trustStore", current_dir);
                 System.setProperty("javax.net.ssl.trustStorePassword", "123456");

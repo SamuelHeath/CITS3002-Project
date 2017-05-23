@@ -1,3 +1,6 @@
+
+
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
@@ -10,7 +13,7 @@ import java.security.SignatureException;
  *
  * @author Samuel Heath
  */
-public class Transaction {
+public class Transaction implements Serializable {
     
     private final String sender_key;
     private final String reciever_key;
@@ -34,7 +37,13 @@ public class Transaction {
      * @return                      Whether or not the transaction signature is valid.
      */
     public boolean verifySignature() {
-        System.out.println("Verified!");
+        try {
+            Signature s = Signature.getInstance("SHA256withRSA");
+            s.initVerify(KeyPairGen.getPublicKey());
+            return s.verify(signature.getBytes(StandardCharsets.US_ASCII));
+        } catch (NoSuchAlgorithmException NSAE) {
+        } catch (SignatureException SE) {
+        } catch (InvalidKeyException IKE) {} 
         return true;
     }
     
@@ -58,8 +67,7 @@ public class Transaction {
         try {
             Signature s = Signature.getInstance("SHA256withRSA");
             s.initSign(KeyPairGen.getPrivateKey());
-            s.update(transaction2Bytes(sender_key.getBytes(StandardCharsets.US_ASCII),
-                    reciever_key.getBytes(StandardCharsets.US_ASCII),ByteBuffer.allocate(8).putDouble(coin_amount).array()));
+            s.update(transaction2Bytes(sender_key.getBytes(),reciever_key.getBytes(),ByteBuffer.allocate(8).putDouble(coin_amount).array()));
             byte[] sig = s.sign();
             this.signature = Base58Check.encode(sig,false);
         } catch (NoSuchAlgorithmException NSAE) {
