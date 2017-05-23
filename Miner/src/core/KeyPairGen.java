@@ -102,7 +102,7 @@ public class KeyPairGen {
             RIPEMD160Digest ripe = new RIPEMD160Digest();
             ripe.update(pubKey, 0, pubKey.length);
             ripe.doFinal(address, 0);
-            return Base58Check.encode(address, true);
+            return Base58Check.encode(address, false);
         } catch (NoSuchAlgorithmException NSAE) {}
         return "";
     }

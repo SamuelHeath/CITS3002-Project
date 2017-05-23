@@ -53,8 +53,9 @@ public class Miner implements Runnable {
      */
     public static Block proofOfWork(Block init_block) {
         Block b = init_block;
+        byte[] merkelRoot = getMerkelRoot(b);
         byte[] prevHash = b.getPreviousHash().getBytes(StandardCharsets.US_ASCII);
-        byte[] header_bytes = blockHeader2Bytes(b,prevHash);
+        byte[] header_bytes = blockHeader2Bytes(b,concatByteArr(prevHash,merkelRoot));
         long init_time = System.currentTimeMillis();
         try {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
@@ -118,6 +119,32 @@ public class Miner implements Runnable {
         return concatByteArr(concatByteArr(const_bytes,timeStamp),nonce);
     }
     
+    private static byte[] getMerkelRoot(Block b) {
+        byte[][] hashes = new byte[b.getTransactionCount()][32];
+        byte[] combinedHashes = new byte[32];
+        
+        for (int i = 0; i < b.getTransactionCount(); i++) {
+            try {
+                MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+                Transaction t = b.getTransactions()[i];
+                byte[] sender = t.getSenderAddress().getBytes(StandardCharsets.US_ASCII);
+                byte[] receiver = t.getReceiverAddress().getBytes(StandardCharsets.US_ASCII);
+                byte[] sig = t.getSignature().getBytes(StandardCharsets.US_ASCII);
+                sha256.update(concatByteArr(concatByteArr(sender,receiver),sig));
+                hashes[i] = sha256.digest();
+            } catch (NoSuchAlgorithmException NSAE) {}
+        }
+        //Assume only two transactions
+        for (int i = 0; i < (int)Math.ceil(b.getTransactionCount()/2); i++) {
+            try {
+                MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+                sha256.update(concatByteArr(hashes[i],hashes[i+1]));
+                combinedHashes = sha256.digest();
+            } catch (NoSuchAlgorithmException NSAE) {}
+        }
+        return combinedHashes;
+    }
+    
     /**
      * @return                  A 4 byte array randomly generated from an int.
      */
@@ -167,16 +194,16 @@ public class Miner implements Runnable {
     private static Block getTransactionBlock(String transactionMessage) {
         String[] transComp = transactionMessage.replace("'", "").split("-");
         Transaction t = new Transaction(transComp[0],transComp[1],Double.valueOf(transComp[2]),transComp[3]);
-        Transaction coinBaseTrans = new Transaction("000",coinBaseAddress,(double)25.0);
+        /*Transaction coinBaseTrans = new Transaction("000",coinBaseAddress,(double)25.0);
         coinBaseTrans.signCoinBaseTransaction(); //Edits the signature field of this object to be signed.
         if (t.verifySignature() && coinBaseTrans.verifySignature()) {
-            transactions.add(t);
+            
             transactions.add(0,coinBaseTrans);//Inserts the Coin Base Transaction at the start of the transactions.
-        }
-        
+        }*/
+        transactions.add(t);
         Transaction[] block_transactions = new Transaction[transactions.size()];
         for (int i = 0; i < block_transactions.length; i++) { block_transactions[i] = transactions.remove(0); }
-        return new Block(getPreviousHash(),coinBaseAddress,(int)(System.currentTimeMillis()/100L),block_transactions.length,0,block_transactions);
+        return new Block(getPreviousHash(),coinBaseAddress,(int)(System.currentTimeMillis()/1000L),0,block_transactions.length,block_transactions);
     }
     
     /**
@@ -197,7 +224,7 @@ public class Miner implements Runnable {
         System.out.println("Coin Base Address: "+currBlock.getCoinBase());
         currBlock = proofOfWork(currBlock);
         MinerIO.getBlockChain().addBlock(currBlock);
-        MinerIO.write();
+        MinerIO.writeBlockChain();
         Server.broadcastMessage(new Message("BCST:"+currBlock.blockToString()));
     }
     

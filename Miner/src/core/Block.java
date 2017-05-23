@@ -16,7 +16,7 @@ public class Block implements Serializable {
     private int block_nonce;
     private int block_transCount;
     
-    public Block(String previousHash, String coinBase, int timeStamp, int transCount, int nonce, Transaction[] transactions) {
+    public Block(String previousHash, String coinBase, int timeStamp, int nonce, int transCount, Transaction[] transactions) {
         this.block_transactions = transactions;
         this.prev_hash = previousHash;
         this.coin_base = coinBase;
@@ -80,5 +80,7 @@ public class Block implements Serializable {
     public String getHash() {
         return this.block_hash;
     }
+    
+    public Transaction[] getTransactions() { return this.block_transactions; }
     
 }

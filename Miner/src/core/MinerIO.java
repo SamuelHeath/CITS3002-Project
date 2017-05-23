@@ -7,7 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Random;
+import com.google.gson.*;
+import java.io.FileWriter;
 
 /**
  * Handles the reading and writing of the serializable block-chain whilst also
@@ -18,6 +19,7 @@ class MinerIO {
     
     private static BlockChain block_chain = new BlockChain();
     private static final String CHAIN_FILENAME = "block-chain.dat";
+    private static final String JSON_CHAIN_FILE = "block-chain.json";
     
     public MinerIO() {
         File f = new File(CHAIN_FILENAME);
@@ -30,45 +32,57 @@ class MinerIO {
             } catch (FileNotFoundException FNFE) {}
         } else {
              //If object not found then we create Genesis block giving all users 
-            //on the system some coins, then write the object and read it again.
+            //on the system some coins, then writeBlockChain the object and read it again.
             Transaction init_trans = new Transaction("0000","0000",50,"0000");
             Block b = new Block("0000","0000",(int)(System.currentTimeMillis()/1000L),0,1,new Transaction[] {init_trans});
             b.setHash("0000");
             System.out.println("Generated Genisis Block: " + b.blockToString());
             block_chain = new BlockChain(b);
-            writeBlockChain(f);
+            MinerIO.writeBlockChain(f);
         }
 
     }
     
+    /**
+     * @return 
+     */
     public static BlockChain getBlockChain() { return block_chain; }
     
-    public static void write() {
-        writeBlockChain(new File(CHAIN_FILENAME));
+    /**
+     * The public interface to write the block chain
+     */
+    public static void writeBlockChain() {
+        MinerIO.writeBlockChain(new File(CHAIN_FILENAME));
     }
     
-    private static void writeBlockChain(File f) {
+    /**
+     * 
+     * @param file 
+     */
+    private static void writeBlockChain(File file) {
         try {
-            FileOutputStream fos = new FileOutputStream(f);
+            FileOutputStream fos = new FileOutputStream(file);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(block_chain);
             oos.flush();
             oos.close();
-            for (Block b : block_chain.getBlocks()) {
-                System.out.println(b.blockToString());
-            }
+            
+            //Write the blockchain to json file for readability.
+            writeBlockChain2Json(new File(JSON_CHAIN_FILE));
+            
         } catch (FileNotFoundException FNFE) { FNFE.printStackTrace(); 
         } catch (IOException IOE) { IOE.printStackTrace(); } 
     }
     
-    private static String generateAddress() {
-        String s = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-        Random rchar = new Random();
-        StringBuilder transaction = new StringBuilder();
-        for (int i = 0; i < 64; i++) {
-            transaction.append(String.valueOf(s.charAt(rchar.nextInt(s.length()))));
+    private static void writeBlockChain2Json(File f) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        try (FileWriter writer = new FileWriter(f)) {
+
+            gson.toJson(block_chain, writer);
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return transaction.toString();
     }
     
     /**
