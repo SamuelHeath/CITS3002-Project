@@ -5,6 +5,7 @@
 
 ## Dependencies
 - [BouncyCastle - Provider 157](https://www.bouncycastle.org/latest_releases.html).
+- [gson - 2.7](https://repo1.maven.org/maven2/com/google/code/gson/gson/2.7/).
 
 ## Requirements
 ### Wallet:
