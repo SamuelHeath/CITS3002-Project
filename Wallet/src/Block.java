@@ -47,6 +47,8 @@ public class Block {
         this.block_nonce = new_nonce;
     }
     
+    public Transaction[] getTransactions() { return this.block_transactions; }
+    
     public String blockToString() {
         StringBuilder sb = new StringBuilder();
         sb.append(this.block_hash);

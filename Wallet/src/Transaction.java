@@ -16,23 +16,28 @@ import java.security.SignatureException;
 public class Transaction implements Serializable {
     
     private final String sender_key;
-    private final String reciever_key;
+    private final String receiver_key;
     private final double coin_amount;
     private String signature;
     
     public Transaction(String senderKey, String recieverKey, double chrisCoins) {
         this.sender_key = senderKey;
-        this.reciever_key = recieverKey;
+        this.receiver_key = recieverKey;
         this.coin_amount = chrisCoins;
     }
     
     public Transaction(String senderKey, String recieverKey, double chrisCoins, String signature) {
         this.sender_key = senderKey;
-        this.reciever_key = recieverKey;
+        this.receiver_key = recieverKey;
         this.coin_amount = chrisCoins;
         this.signature = signature;
     }
     
+    public String getSenderKey() { return this.sender_key; }
+    
+    public String getReceiverKey() { return this.receiver_key; }
+    
+    public double getTransactionAmount() {return this.coin_amount; }
     /**
      * @return                      Whether or not the transaction signature is valid.
      */
@@ -67,7 +72,7 @@ public class Transaction implements Serializable {
         try {
             Signature s = Signature.getInstance("SHA256withRSA");
             s.initSign(KeyPairGen.getPrivateKey());
-            s.update(transaction2Bytes(sender_key.getBytes(),reciever_key.getBytes(),ByteBuffer.allocate(8).putDouble(coin_amount).array()));
+            s.update(transaction2Bytes(sender_key.getBytes(),receiver_key.getBytes(),ByteBuffer.allocate(8).putDouble(coin_amount).array()));
             byte[] sig = s.sign();
             this.signature = Base58Check.encode(sig,false);
         } catch (NoSuchAlgorithmException NSAE) {
@@ -81,7 +86,7 @@ public class Transaction implements Serializable {
         StringBuilder sb = new StringBuilder("'");
         sb.append(this.sender_key);
         sb.append("-");
-        sb.append(this.reciever_key);
+        sb.append(this.receiver_key);
         sb.append("-");
         sb.append(this.coin_amount);
         sb.append("-");

@@ -15,7 +15,7 @@ import java.io.FileWriter;
  * facilitating the exportation to other formats e.g. xml and json.
  * @author Samuel Heath
  */
-class MinerIO {
+public class MinerIO {
     
     private static BlockChain block_chain = new BlockChain();
     private static final String CHAIN_FILENAME = "block-chain.dat";
