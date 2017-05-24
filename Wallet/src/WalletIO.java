@@ -1,4 +1,5 @@
 
+import com.google.gson.Gson;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -45,9 +46,12 @@ public class WalletIO implements Runnable {
                 } else if (t.getReceiverKey().equals(pubKey)) {
                     //Add
                     balance += t.getTransactionAmount();
+                } else if (t.getReceiverKey().equals("0000")) {
+                    balance += t.getTransactionAmount();
                 }
             }
         }
+        return balance;
     }
     
     /**
@@ -70,6 +74,13 @@ public class WalletIO implements Runnable {
             tx[i] = new Transaction(tx_comps[0],tx_comps[1],Double.valueOf(tx_comps[2]),tx_comps[3]);
         }
         return tx;
+    }
+    
+    public static void readBlockChain(String s) {
+        Gson g = new Gson();
+        BlockChain bc = new BlockChain();
+        block_chain = g.fromJson(s, bc.getClass());
+        System.out.println("Latest BLock Hash: "+block_chain.getLastHash());
     }
     
     /**

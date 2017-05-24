@@ -41,13 +41,8 @@ public class ConnectionWorker implements Runnable {
                     Message m = new Message(string);
                     switch (m.getType()) {
                         case "REQBC":
-                            ArrayList<Message> msgs = Miner.blockChainRequested(m);
-                            if (!msgs.isEmpty()) {
-                                for (int i = 0; i < msgs.size(); i++) {
-                                    pwrite.println(msgs.get(i).toString());
-                                    pwrite.flush();
-                                }
-                            } else { sendMessage(new Message("BCRS:No Chain Available")); }
+                                pwrite.println(Miner.blockChainRequested(m));
+                                pwrite.flush();
                             break;
                         case "BCST":
                             Server.broadcastMessage(m);

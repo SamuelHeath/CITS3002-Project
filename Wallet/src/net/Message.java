@@ -13,7 +13,7 @@ public class Message {
      */
     public Message(String raw_msg) {
         // Split message components.
-        String[] msg_comps = raw_msg.split(":");
+        String[] msg_comps = raw_msg.split(";");
         this.msg_type = Message_Type.valueOf(msg_comps[0]);
         this.msg_data = msg_comps[1];
     }
@@ -30,7 +30,7 @@ public class Message {
     
     @Override
     public String toString() {
-        return msg_type + ":" + msg_data;
+        return msg_type + ";" + msg_data;
     }
     
     /**

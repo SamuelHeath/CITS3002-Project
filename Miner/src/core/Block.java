@@ -1,6 +1,8 @@
 package core;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 
 /**
  *
@@ -9,6 +11,7 @@ import java.io.Serializable;
 public class Block implements Serializable {
     
     private String block_hash;
+    private String merkelRoot;
     private final Transaction[] block_transactions;
     private final String prev_hash;
     private final String coin_base;
@@ -79,6 +82,22 @@ public class Block implements Serializable {
     
     public String getHash() {
         return this.block_hash;
+    }
+    
+    public byte[] getMerkelRoot() {
+        return this.merkelRoot.getBytes(StandardCharsets.US_ASCII);
+    }
+    
+    public void setMerkelRoot(String new_root) {
+        this.merkelRoot = new_root;
+    }
+    
+    public String merkel2String() {
+        String s = "";
+        try {
+            s =Base58Check.encode(merkelRoot.getBytes(StandardCharsets.US_ASCII), false);
+        } catch (NoSuchAlgorithmException NSAE) {}
+        return s;
     }
     
     public Transaction[] getTransactions() { return this.block_transactions; }

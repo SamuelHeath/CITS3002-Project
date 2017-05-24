@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import com.google.gson.*;
 import java.io.FileWriter;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Handles the reading and writing of the serializable block-chain whilst also
@@ -35,7 +36,8 @@ public class MinerIO {
             //on the system some coins, then writeBlockChain the object and read it again.
             Transaction init_trans = new Transaction("0000","0000",50,"0000");
             Block b = new Block("0000","0000",(int)(System.currentTimeMillis()/1000L),0,1,new Transaction[] {init_trans});
-            b.setHash("0000");
+            b.setHash("00");
+            b.setMerkelRoot("0000");
             System.out.println("Generated Genisis Block: " + b.blockToString());
             block_chain = new BlockChain(b);
             MinerIO.writeBlockChain(f);
@@ -74,12 +76,15 @@ public class MinerIO {
         } catch (IOException IOE) { IOE.printStackTrace(); } 
     }
     
+    public static String getBlockChainAsJson() {
+        Gson g = new Gson();
+        return g.toJson(block_chain, block_chain.getClass());
+    }
+    
     private static void writeBlockChain2Json(File f) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         try (FileWriter writer = new FileWriter(f)) {
-
             gson.toJson(block_chain, writer);
-
         } catch (IOException e) {
             e.printStackTrace();
         }

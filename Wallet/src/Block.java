@@ -1,18 +1,21 @@
-
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 
 /**
  *
  * @author Samuel Heath
  */
-public class Block {
+public class Block implements Serializable {
     
     private String block_hash;
+    private String merkelRoot;
     private final Transaction[] block_transactions;
     private final String prev_hash;
     private final String coin_base;
     private int time_stamp;
     private int block_nonce;
-    private final int block_transCount;
+    private int block_transCount;
     
     public Block(String previousHash, String coinBase, int timeStamp, int nonce, int transCount, Transaction[] transactions) {
         this.block_transactions = transactions;
@@ -39,6 +42,12 @@ public class Block {
         this.time_stamp = new_time;
     }
     
+    public int getTransactionCount() { return this.block_transCount; }
+    
+    public void setTransactionCount(int transaction_count) {
+        this.block_transCount = transaction_count;
+    }
+    
     public int getNonce() {
         return this.block_nonce;
     }
@@ -46,8 +55,6 @@ public class Block {
     public void setNonce(int new_nonce) {
         this.block_nonce = new_nonce;
     }
-    
-    public Transaction[] getTransactions() { return this.block_transactions; }
     
     public String blockToString() {
         StringBuilder sb = new StringBuilder();
@@ -74,5 +81,23 @@ public class Block {
     public String getHash() {
         return this.block_hash;
     }
+    
+    public byte[] getMerkelRoot() {
+        return this.merkelRoot.getBytes(StandardCharsets.US_ASCII);
+    }
+    
+    public void setMerkelRoot(String new_root) {
+        this.merkelRoot = new_root;
+    }
+    
+    public String merkel2String() {
+        String s = "";
+        try {
+            s =Base58Check.encode(merkelRoot.getBytes(StandardCharsets.US_ASCII), false);
+        } catch (NoSuchAlgorithmException NSAE) {}
+        return s;
+    }
+    
+    public Transaction[] getTransactions() { return this.block_transactions; }
     
 }

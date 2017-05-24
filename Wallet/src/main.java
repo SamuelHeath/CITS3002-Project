@@ -62,18 +62,18 @@ public class main {
                 
                 if (args[2].equals("--trans")) {
                     //Get latest hash off the stored bitcoin ledger, and add to below call.
-                    pwrite.println("REQBC:H");
+                    pwrite.println("REQBC;H");
                     pwrite.flush();
                     String[] input = args[3].split(" ");
                     if (input.length == 2) {
                         Transaction t = new Transaction(KeyPairGen.getPublicKeyAddress(),input[0],Double.valueOf(input[1]));
                         t.signTransaction();
-                        pwrite.println("TRNS:"+t.transactionToString());
+                        pwrite.println("TRNS;"+t.transactionToString());
                         pwrite.flush();
                     } else { System.out.println("Unknown Command."); System.exit(-1); }
                 } else if (args[2].equals("--update")) {
                     System.out.println("");
-                    pwrite.println("REQBC:H");
+                    pwrite.println("REQBC;H");
                     pwrite.flush();
                 } else {
                     System.out.println("You must enter atleast 3 arguments");
@@ -85,7 +85,6 @@ public class main {
                     Message m = new Message(server_resp);
                     switch (m.getType()) {
                         case "BCRS":
-                            System.out.println("Block-Chain Recieved");
                             updateWallet(m);
                             break;
                         default:
@@ -102,7 +101,8 @@ public class main {
     }
     
     private static void updateWallet(Message m) {
-        System.out.println("You have 25 chriscoin.");
+        WalletIO.readBlockChain(m.getRawData());
+        System.out.println(WalletIO.getBalance());
     }
     
     
