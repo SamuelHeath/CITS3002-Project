@@ -21,10 +21,13 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
+import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
         
 /**
@@ -105,6 +108,17 @@ public class KeyPairGen {
             return Base58Check.encode(address, false);
         } catch (NoSuchAlgorithmException NSAE) {}
         return "";
+    }
+    
+    public static PublicKey publicKeyFromString(String key) {
+        PublicKey pk = getPublicKey(); //This is bad
+        try {
+            X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(Base58Check.decode(key,false));
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+
+            pk = kf.generatePublic(X509publicKey);
+        } catch (Exception E) {}
+        return pk;
     }
     
     /**

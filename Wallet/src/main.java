@@ -1,7 +1,6 @@
+import com.google.gson.Gson;
 import java.io.*;
 import java.net.InetAddress;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -66,10 +65,14 @@ public class main {
                     pwrite.flush();
                     String[] input = args[3].split(" ");
                     if (input.length == 2) {
-                        Transaction t = new Transaction(KeyPairGen.getPublicKeyAddress(),input[0],Double.valueOf(input[1]));
+                        Transaction t = new Transaction(KeyPairGen.publicKey2String(KeyPairGen.getPublicKey()),input[0],Double.valueOf(input[1]));
                         t.signTransaction();
-                        pwrite.println("TRNS;"+t.transactionToString());
-                        pwrite.flush();
+                        if (t.verifySignature()) {
+                            System.out.println("Verified Sig");
+                            pwrite.println("TRNS;"+new Gson().toJson(t, Transaction.class));
+                            pwrite.flush();
+                        } else { System.out.println("Couldn't verify signature."); System.exit(-1); }
+                        
                     } else { System.out.println("Unknown Command."); System.exit(-1); }
                 } else if (args[2].equals("--update")) {
                     System.out.println("");
@@ -101,7 +104,7 @@ public class main {
     }
     
     private static void updateWallet(Message m) {
-        WalletIO.readBlockChain(m.getRawData());
+        WalletIO.readBlockChainFromStream(m.getRawData());
         System.out.println(WalletIO.getBalance());
     }
     

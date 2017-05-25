@@ -37,7 +37,6 @@ public class MinerIO {
             Block b = new Block("0000","0000",(int)(System.currentTimeMillis()/1000L),0,1,new Transaction[] {init_trans});
             b.setHash("0000");
             b.setMerkelRoot("0000");
-            System.out.println("Generated Genisis Block: " + b.blockToString());
             block_chain = new BlockChain(b);
             MinerIO.writeBlockChain(f);
         }

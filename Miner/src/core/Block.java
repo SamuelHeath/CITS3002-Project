@@ -58,24 +58,6 @@ public class Block implements Serializable {
         this.block_nonce = new_nonce;
     }
     
-    public String blockToString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(this.block_hash);
-        sb.append("--");
-        sb.append(this.prev_hash);
-        sb.append("--");
-        sb.append(this.time_stamp);
-        sb.append("--");
-        sb.append(this.block_transCount);
-        sb.append("--");
-        sb.append(this.block_nonce);
-        for (Transaction t : block_transactions) {
-            sb.append("--");
-            sb.append(t.transactionToString());
-        }
-        return sb.toString();
-    }
-    
     public void setHash(String hash) {
         this.block_hash = hash;
     }

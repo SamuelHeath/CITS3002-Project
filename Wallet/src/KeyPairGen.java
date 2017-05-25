@@ -1,6 +1,8 @@
 
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
@@ -9,8 +11,11 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.X509EncodedKeySpec;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import java.util.Base64;
 
         
 /**
@@ -48,6 +53,21 @@ public class KeyPairGen {
             return Base58Check.encode(address, true);
         } catch (NoSuchAlgorithmException NSAE) {}
         return "";
+    }
+    
+    public static String publicKey2String(PublicKey pub_key) {
+        return Base58Check.encode(pub_key.getEncoded(),false);
+    }
+    
+    public static PublicKey publicKeyFromString(String key) {
+        PublicKey pk = getPublicKey(); //This is bad
+        try {
+            X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(key.getBytes(StandardCharsets.US_ASCII));
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+
+            pk = kf.generatePublic(X509publicKey);
+        } catch (Exception E) {}
+        return pk;
     }
     
     /**

@@ -4,10 +4,12 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.util.Base64;
 
 /**
  *
@@ -30,7 +32,6 @@ public class Transaction implements Serializable {
         this.sender_key = senderKey;
         this.receiver_key = recieverKey;
         this.coin_amount = chrisCoins;
-        this.signature = signature;
     }
     
     public String getSenderKey() { return this.sender_key; }
@@ -47,18 +48,37 @@ public class Transaction implements Serializable {
     public boolean verifySignature() {
         try {
             Signature s = Signature.getInstance("SHA256withRSA");
-            s.initVerify(KeyPairGen.getPublicKey());
-            s.verify(signature.getBytes(StandardCharsets.US_ASCII));
+            PublicKey pubKey = KeyPairGen.publicKeyFromString(sender_key);
+            s.initVerify(pubKey);
+            MessageDigest sha256 = MessageDigest.getInstance("SHA256");
+            byte[] tx = transaction2Bytes(sender_key.getBytes(StandardCharsets.UTF_8),receiver_key.getBytes(StandardCharsets.US_ASCII),ByteBuffer.allocate(8).putDouble(coin_amount).array());
+            byte[] hashedTX = sha256.digest(sha256.digest(tx));
+            s.update(hashedTX);
+            return s.verify(Base58Check.decode(signature,false));
         } catch (NoSuchAlgorithmException NSAE) {
         } catch (SignatureException SE) {
         } catch (InvalidKeyException IKE) {} 
-        return true;
+        return false;
     }
     
-    
+    public boolean verifyCoinBaseSignature() {
+        try {
+            Signature s = Signature.getInstance("SHA256withRSA");
+            s.initVerify(KeyPairGen.getPublicKey());
+            s.update(transaction2Bytes(receiver_key.getBytes(),ByteBuffer.allocate(8).putDouble(coin_amount).array()));
+            return s.verify(Base58Check.decode(signature,false));
+        } catch (NoSuchAlgorithmException NSAE) {
+        } catch (SignatureException SE) {
+        } catch (InvalidKeyException IKE) {} 
+        return false;
+    }
     
     private static byte[] transaction2Bytes(byte[] receiver_key, byte[] amount) {
         return concatByteArr(receiver_key,amount);
+    }
+    
+    private static byte[] transaction2Bytes(byte[] sender_key, byte[] receiver_key, byte[] amount) {
+        return concatByteArr(concatByteArr(sender_key,receiver_key),amount);
     }
     
     /**
@@ -71,6 +91,12 @@ public class Transaction implements Serializable {
         System.arraycopy(a, 0, concatArr, 0, b.length);
         System.arraycopy(b, 0, concatArr, a.length, b.length);
         return concatArr;
+    }
+    
+    public String bytes2String(byte[] b) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i<b.length; i++) { sb.append((char)b[i]); }
+        return sb.toString();
     }
     
     public void signCoinBaseTransaction() {
@@ -86,18 +112,4 @@ public class Transaction implements Serializable {
         } catch (InvalidKeyException IKE) { IKE.printStackTrace(); 
         } catch (SignatureException SE) { SE.printStackTrace(); }
     }
-    
-    public String transactionToString() {
-        StringBuilder sb = new StringBuilder("'");
-        sb.append(this.sender_key);
-        sb.append("-");
-        sb.append(this.receiver_key);
-        sb.append("-");
-        sb.append(this.coin_amount);
-        sb.append("-");
-        sb.append(this.signature);
-        sb.append("'");
-        return sb.toString();
-    }
-    
 }

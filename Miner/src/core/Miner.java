@@ -1,10 +1,12 @@
 package core;
 
+import com.google.gson.Gson;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Base64;
 
 /**
  * Miner which assembles blocks from a single transaction and performs calculations
@@ -139,14 +141,14 @@ public class Miner implements Runnable {
             Transaction t = b.getTransactions()[1];
             byte[] sender = t.getSenderKey().getBytes(StandardCharsets.US_ASCII);
             byte[] receiver = t.getReceiverKey().getBytes(StandardCharsets.US_ASCII);
-            byte[] sig = sha256.digest(t.getSignature().getBytes(StandardCharsets.US_ASCII));
+            byte[] sig = sha256.digest(Base58Check.decode(t.getSignature(),false));
             sha256.update(Miner.concatByteArr(Miner.concatByteArr(sender,receiver),sig));
             hash = sha256.digest();
             
             //Do hashing of the coinbase address;
             t = b.getTransactions()[0];
             receiver = t.getReceiverKey().getBytes(StandardCharsets.US_ASCII);
-            sig = sha256.digest(t.getSignature().getBytes(StandardCharsets.US_ASCII));
+            sig = sha256.digest(Base58Check.decode(t.getSignature(),false));
             sha256.update(Miner.concatByteArr(receiver,sig));
             byte[] coinbaseHash = sha256.digest();
             sha256.update(Miner.concatByteArr(hash,coinbaseHash));
@@ -190,22 +192,36 @@ public class Miner implements Runnable {
         return concatArr;
     }
     
+    public static String bytes2String(byte[] b) {
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i<b.length; i++) { sb.append((char)b[i]); }
+        return sb.toString();
+    }
+    
     /**
      * 
      * @param transactionMessage
      * @return 
      */
-    private static Block getTransactionBlock(String transactionMessage) {
-        String[] transComp = transactionMessage.replace("'", "").split("-");
-        Transaction t = new Transaction(transComp[0],transComp[1],Double.valueOf(transComp[2]),transComp[3]);
-        Transaction coinBaseTrans = new Transaction("0000",coinBaseAddress,(double)25.0);
-        coinBaseTrans.signCoinBaseTransaction(); //Edits the signature field of this object to be signed.
-        //if (t.verifySignature() && coinBaseTrans.verifySignature()) {
+    private static Block createNewBlock(Transaction t) {
+        Transaction coin_base_trans = new Transaction("1111","1111",(double)2.5);
+        try {
+            coin_base_trans = new Transaction("0000",bytes2String(Base58Check.encode(KeyPairGen.getPublicKey().getEncoded(),false).getBytes(StandardCharsets.US_ASCII)),(double)25.0);
+        } catch (NoSuchAlgorithmException NSAE) {}
+        coin_base_trans.signCoinBaseTransaction(); //Edits the signature field of this object to be signed.
+        if (t.verifySignature()) {
+            System.out.println("Verified Transaction Signature");
+            transactions.add(t);
             
-            
-        //}
-        transactions.add(t);
-        transactions.add(0,coinBaseTrans);//Inserts the Coin Base Transaction at the start of the transactions.
+        } else {
+            System.out.println("Transaction Verification Failed");
+        }
+        if (coin_base_trans.verifyCoinBaseSignature()) {
+            System.out.println("Coin Base Transaction Verified");
+            transactions.add(0,coin_base_trans);//Inserts the Coin Base Transaction at the start of the transactions.
+        } else {
+            System.out.println("Coin Base Verification Failed");
+        }
         Transaction[] block_transactions = new Transaction[transactions.size()];
         for (int i = 0; i < block_transactions.length; i++) { block_transactions[i] = transactions.remove(0); }
         return new Block(getPreviousHash(),coinBaseAddress,(int)(System.currentTimeMillis()/1000L),0,block_transactions.length,block_transactions);
@@ -223,7 +239,7 @@ public class Miner implements Runnable {
      * @param transaction           The transaction the wallet wants completed.
      */
     public static void transactionMessage(Message transaction) {
-        Block currBlock = getTransactionBlock(transaction.getRawData());
+        Block currBlock = createNewBlock((Transaction) new Gson().fromJson(transaction.getRawData(), Transaction.class));
         System.out.println("Transactions:"+currBlock.getTransactionCount());
         System.out.println("Previous Hash: "+currBlock.getPreviousHash());
         System.out.println("Coin Base Address: "+currBlock.getCoinBase());

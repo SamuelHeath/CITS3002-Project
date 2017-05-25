@@ -1,14 +1,12 @@
-
-
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.util.Base64;
 
 /**
  *
@@ -46,11 +44,15 @@ public class Transaction implements Serializable {
         try {
             Signature s = Signature.getInstance("SHA256withRSA");
             s.initVerify(KeyPairGen.getPublicKey());
-            return s.verify(signature.getBytes(StandardCharsets.US_ASCII));
+            MessageDigest sha256 = MessageDigest.getInstance("SHA256");
+            byte[] tx = transaction2Bytes(sender_key.getBytes(StandardCharsets.US_ASCII),receiver_key.getBytes(StandardCharsets.US_ASCII),ByteBuffer.allocate(8).putDouble(coin_amount).array());
+            byte[] hashedTX = sha256.digest(sha256.digest(tx));
+            s.update(hashedTX);
+            return s.verify(Base58Check.decode(signature,false));
         } catch (NoSuchAlgorithmException NSAE) {
         } catch (SignatureException SE) {
         } catch (InvalidKeyException IKE) {} 
-        return true;
+        return false;
     }
     
     private static byte[] transaction2Bytes(byte[] sender_key, byte[] receiver_key, byte[] amount) {
@@ -69,12 +71,18 @@ public class Transaction implements Serializable {
         return concatArr;
     }
     
+    public String bytes2String(byte[] b) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i<b.length; i++) { sb.append((char)b[i]); }
+        return sb.toString();
+    }
+    
     public void signTransaction() {
         try {
             Signature s = Signature.getInstance("SHA256withRSA");
             s.initSign(KeyPairGen.getPrivateKey());
             MessageDigest sha256 = MessageDigest.getInstance("SHA256");
-            byte[] tx = transaction2Bytes(sender_key.getBytes(),receiver_key.getBytes(),ByteBuffer.allocate(8).putDouble(coin_amount).array());
+            byte[] tx = transaction2Bytes(sender_key.getBytes(StandardCharsets.US_ASCII),receiver_key.getBytes(StandardCharsets.US_ASCII),ByteBuffer.allocate(8).putDouble(coin_amount).array());
             byte[] hashedTX = sha256.digest(sha256.digest(tx));
             s.update(hashedTX);
             byte[] sig = s.sign();
@@ -84,19 +92,6 @@ public class Transaction implements Serializable {
 
         } catch (InvalidKeyException IKE) { IKE.printStackTrace(); 
         } catch (SignatureException SE) { SE.printStackTrace(); }
-    }
-    
-    public String transactionToString() {
-        StringBuilder sb = new StringBuilder("'");
-        sb.append(this.sender_key);
-        sb.append("-");
-        sb.append(this.receiver_key);
-        sb.append("-");
-        sb.append(this.coin_amount);
-        sb.append("-");
-        sb.append(this.signature);
-        sb.append("'");
-        return sb.toString();
     }
     
 }

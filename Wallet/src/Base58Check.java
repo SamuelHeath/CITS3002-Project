@@ -10,8 +10,12 @@ public class Base58Check {
     private static BigInteger BASE_SIZE = BigInteger.valueOf(ALPHABET_ARRAY.length);
     private static int CHECKSUM_SIZE = 4;
 
-    public static String encode(byte[] data, boolean isHash) throws NoSuchAlgorithmException {
-        return encodePlain(addChecksum(data),isHash);
+    public static String encode(byte[] data, boolean isHash) {
+        byte[] b = new byte[2];
+        try {
+            b = addChecksum(data);
+        } catch (NoSuchAlgorithmException NSAE) {}
+        return encodePlain(b,isHash);
     }
 
     public static String encodePlain(byte[] data, boolean isHash) {
@@ -48,11 +52,19 @@ public class Base58Check {
         return result;
     }
 
-
-    public static byte[] decode(String encoded, boolean isHash) throws NoSuchAlgorithmException {
+    public static String decodeToString(String encoded, boolean isHash) {
+        byte[] bytz = decode(encoded,isHash);
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < bytz.length; i++) { s.append((char)bytz[i]); }
+        return s.toString();
+    }
+    
+    public static byte[] decode(String encoded, boolean isHash) {
         byte[] valueWithChecksum = decodePlain(encoded,isHash);
-
-        byte[] value = verifyAndRemoveChecksum(valueWithChecksum);
+        byte[] value = new byte[2];
+        try {
+            value = verifyAndRemoveChecksum(valueWithChecksum);
+        } catch (NoSuchAlgorithmException NSAE) {}
 
         if (value == null) {
             throw new IllegalArgumentException("Base58 checksum is invalid");
