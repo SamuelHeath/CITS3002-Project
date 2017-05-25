@@ -5,6 +5,13 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+/* I have slightly altered the code from 
+ * https://github.com/MetacoSA/metaco-java-client/blob/master/src/main/java/com/metaco/api/encoders/Base58Check.java
+ * such that it will leave the 0's if the encoded string is a hash found, that 
+ * way we can verify it has found a hash to the correct difficulty.
+ * Samuel Heath.
+ */
+
 /* Inspired from https://github.com/adamcaudill/Base58Check/blob/master/src/Base58Check/Base58CheckEncoding.cs */
 public class Base58Check {
     private static String ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";

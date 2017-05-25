@@ -11,7 +11,7 @@ import java.security.NoSuchAlgorithmException;
 public class Block implements Serializable {
     
     private String block_hash;
-    private String merkelRoot;
+    private String merkel_root;
     private final Transaction[] block_transactions;
     private final String prev_hash;
     private final String coin_base;
@@ -85,17 +85,17 @@ public class Block implements Serializable {
     }
     
     public byte[] getMerkelRoot() {
-        return this.merkelRoot.getBytes(StandardCharsets.US_ASCII);
+        return this.merkel_root.getBytes(StandardCharsets.US_ASCII);
     }
     
     public void setMerkelRoot(String new_root) {
-        this.merkelRoot = new_root;
+        this.merkel_root = new_root;
     }
     
     public String merkel2String() {
         String s = "";
         try {
-            s =Base58Check.encode(merkelRoot.getBytes(StandardCharsets.US_ASCII), false);
+            s =Base58Check.encode(merkel_root.getBytes(StandardCharsets.US_ASCII), false);
         } catch (NoSuchAlgorithmException NSAE) {}
         return s;
     }

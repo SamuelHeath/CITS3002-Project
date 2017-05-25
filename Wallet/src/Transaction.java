@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Signature;
@@ -72,7 +73,10 @@ public class Transaction implements Serializable {
         try {
             Signature s = Signature.getInstance("SHA256withRSA");
             s.initSign(KeyPairGen.getPrivateKey());
-            s.update(transaction2Bytes(sender_key.getBytes(),receiver_key.getBytes(),ByteBuffer.allocate(8).putDouble(coin_amount).array()));
+            MessageDigest sha256 = MessageDigest.getInstance("SHA256");
+            byte[] tx = transaction2Bytes(sender_key.getBytes(),receiver_key.getBytes(),ByteBuffer.allocate(8).putDouble(coin_amount).array());
+            byte[] hashedTX = sha256.digest(sha256.digest(tx));
+            s.update(hashedTX);
             byte[] sig = s.sign();
             this.signature = Base58Check.encode(sig,false);
         } catch (NoSuchAlgorithmException NSAE) {
