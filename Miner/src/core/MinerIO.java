@@ -1,15 +1,15 @@
 package core;
 
+import com.google.gson.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import com.google.gson.*;
-import java.io.FileWriter;
-
+import javax.xml.bind.DatatypeConverter;
 /**
  * Handles the reading and writing of the serializable block-chain whilst also
  * facilitating the exportation to other formats e.g. xml and json.
@@ -31,16 +31,28 @@ public class MinerIO {
                 System.out.println("Size: " + block_chain.getBlocks().size());
             } catch (FileNotFoundException FNFE) {}
         } else {
-             //If object not found then we create Genesis block giving all users 
+            byte[] zeroBytes = new byte[32]; //Initially has all 0's.
+            
+            //If object not found then we create Genesis block giving all users 
             //on the system some coins, then writeBlockChain the object and read it again.
-            Transaction init_trans = new Transaction("0000","0000",50,"0000");
-            Block b = new Block("0000","0000",(int)(System.currentTimeMillis()/1000L),0,1,new Transaction[] {init_trans});
-            b.setHash("0000");
-            b.setMerkelRoot("0000");
+            Transaction init_trans = new Transaction(getHex(zeroBytes),getHex(zeroBytes),
+                    25.0,getHex(zeroBytes));
+            
+            //The actual coinbase address of the original Bitcoin Block.
+            Block b = new Block(getHex(zeroBytes),"1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                    (int)(System.currentTimeMillis()/1000L),0,1,new Transaction[] {init_trans});
+            
+            b.setHash(getHex(zeroBytes));
+            b.setMerkleRoot(zeroBytes);
+            
             block_chain = new BlockChain(b);
             MinerIO.writeBlockChain(f);
         }
 
+    }
+    
+    public String getHex(byte[] bytes) {
+        return DatatypeConverter.printHexBinary(bytes);
     }
     
     /**

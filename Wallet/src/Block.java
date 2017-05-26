@@ -1,6 +1,5 @@
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
 
 /**
  *
@@ -9,7 +8,7 @@ import java.security.NoSuchAlgorithmException;
 public class Block implements Serializable {
     
     private String block_hash;
-    private String merkel_root;
+    private String merkle_root;
     private final Transaction[] block_transactions;
     private final String prev_hash;
     private final String coin_base;
@@ -64,17 +63,17 @@ public class Block implements Serializable {
         return this.block_hash;
     }
     
-    public byte[] getMerkelRoot() {
-        return this.merkel_root.getBytes(StandardCharsets.US_ASCII);
+    public byte[] getMerkleRoot() {
+        return this.merkle_root.getBytes(StandardCharsets.US_ASCII);
     }
     
-    public void setMerkelRoot(String new_root) {
-        this.merkel_root = new_root;
+    public void setMerkleRoot(String new_root) {
+        this.merkle_root = new_root;
     }
     
-    public String merkel2String() {
+    public String merkle2String() {
         String s = "";
-        s =Base58Check.encode(merkel_root.getBytes(StandardCharsets.US_ASCII), false);
+        s =Base58Check.encode(merkle_root.getBytes(StandardCharsets.US_ASCII), false);
         return s;
     }
     

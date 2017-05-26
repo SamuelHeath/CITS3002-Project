@@ -6,8 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Base64;
-
+import javax.xml.bind.DatatypeConverter;
 /**
  * Miner which assembles blocks from a single transaction and performs calculations
  * to find the hash of the block.
@@ -54,21 +53,19 @@ public class Miner implements Runnable {
      */
     public static Block proofOfWork(Block init_block) {
         Block b = init_block;
-        try {
-            b.setMerkelRoot(Base58Check.encode(calculateMerkelRoot(b),false));
-        } catch (NoSuchAlgorithmException NSAE) {}
-        byte[] merkelRoot = b.getMerkelRoot(); // Adds variabillity
-        System.out.println("Merkel Root: "+b.merkel2String());
+        b.setMerkleRoot(calculateMerkleRoot(b));
+        byte[] merkleRoot = b.getMerkleRoot().getBytes(); // Adds variabillity
+        System.out.printf("Merkel Root: 0x%s\n",b.getMerkleRoot());
         System.out.println(b.getPreviousHash());
-        byte[] prevHash = b.getPreviousHash().getBytes(StandardCharsets.US_ASCII);
-        byte[] const_header_bytes = concatByteArr(prevHash,merkelRoot);
+        byte[] prevHash = b.getPreviousHash().getBytes();
+        byte[] const_header_bytes = concatByteArr(prevHash,merkleRoot);
         byte[] header_bytes = blockHeader2Bytes(b,const_header_bytes);
         long init_time = System.currentTimeMillis();
         try {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
             byte[] double_hash = sha256.digest(sha256.digest(header_bytes));
             System.out.print("Start Hash: ");
-            System.out.println(Base58Check.encode(double_hash,true));
+            System.out.println(DatatypeConverter.printHexBinary(double_hash));
             System.out.println("---------------------------------------");
             long init_time2 = System.currentTimeMillis();
             long numHashes = 1; // Stores a count of the number of hashes
@@ -93,7 +90,7 @@ public class Miner implements Runnable {
                 sha256.update(header_bytes);
                 double_hash = sha256.digest();
             }
-            b.setHash(Base58Check.encode(double_hash,true));
+            b.setHash(DatatypeConverter.printHexBinary(double_hash));
             System.out.println("End Hash:   " + b.getHash());
             System.out.println("Time: " + (float)(System.currentTimeMillis() - init_time)/60000 + "min " + "Nonce: " + b.getNonce());
         } catch (NoSuchAlgorithmException NSAE) {}
@@ -133,28 +130,29 @@ public class Miner implements Runnable {
         return ByteBuffer.allocate(4).putInt(current_nonce).array();
     }
     
-     private static byte[] calculateMerkelRoot(Block b) {
-        byte[] hash = new byte[32];
+     private static byte[] calculateMerkleRoot(Block b) {
+        
+        byte[] merkle = new byte[32];
         try {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
             Transaction t = b.getTransactions()[1];
-            byte[] sender = t.getSenderKey().getBytes(StandardCharsets.US_ASCII);
-            byte[] receiver = t.getReceiverKey().getBytes(StandardCharsets.US_ASCII);
+            byte[] sender = t.getSenderKey().getBytes();
+            byte[] receiver = t.getReceiverKey().getBytes();
             byte[] sig = sha256.digest(Base58Check.decode(t.getSignature(),false));
             sha256.update(Miner.concatByteArr(Miner.concatByteArr(sender,receiver),sig));
-            hash = sha256.digest();
+            byte[] hash = sha256.digest();
             
             //Do hashing of the coinbase address;
             t = b.getTransactions()[0];
-            receiver = t.getReceiverKey().getBytes(StandardCharsets.US_ASCII);
+            receiver = t.getReceiverKey().getBytes();
             sig = sha256.digest(Base58Check.decode(t.getSignature(),false));
             sha256.update(Miner.concatByteArr(receiver,sig));
             byte[] coinbaseHash = sha256.digest();
             sha256.update(Miner.concatByteArr(hash,coinbaseHash));
-            hash = sha256.digest();
+            merkle = sha256.digest();
         } catch (NoSuchAlgorithmException NSAE) {}
         
-        return hash;
+        return merkle;
     }
     
     /**
@@ -203,9 +201,10 @@ public class Miner implements Runnable {
      * @return 
      */
     private static Block createNewBlock(Transaction t) {
-        Transaction coin_base_trans = new Transaction("1111","1111",(double)2.5);
+        Transaction coin_base_trans = new Transaction("",
+                "00000000000000000000000000000000",(double)2.5);
         try {
-            coin_base_trans = new Transaction("0000",bytes2String(Base58Check.encode(KeyPairGen.getPublicKey().getEncoded(),false).getBytes(StandardCharsets.US_ASCII)),(double)25.0);
+            coin_base_trans = new Transaction("",bytes2String(Base58Check.encode(KeyPairGen.getPublicKey().getEncoded(),false).getBytes()),(double)2.5);
         } catch (NoSuchAlgorithmException NSAE) {}
         coin_base_trans.signCoinBaseTransaction(); //Edits the signature field of this object to be signed.
         if (t.verifySignature()) {
