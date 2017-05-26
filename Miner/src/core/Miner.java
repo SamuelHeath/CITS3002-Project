@@ -15,7 +15,6 @@ import java.util.Base64;
  */
 public class Miner implements Runnable {
     
-    private static Block currentBlock;
     private static String coinBaseAddress;
     private static int proof_difficulty = 3; //Default difficulty for miner
     private static ArrayList<Transaction> transactions = new ArrayList(1);
@@ -111,7 +110,7 @@ public class Miner implements Runnable {
         for (int i = 0; i < proof_difficulty; i++) {
             if (hash[i] != 0) return false;
         }
-        if ((hash[proof_difficulty] & 0xF) != 0) return false;
+        if (((hash[proof_difficulty] & 0xf0) >> 4) != 0) return false;
         return true;
     }
     
@@ -173,7 +172,7 @@ public class Miner implements Runnable {
             for (int i=0; i < proof_difficulty; i++) {
                 if (encodedhash[i] != 0) return false;
             }
-            if ((encodedhash[proof_difficulty] & 0xF) != 0) return false;
+            if (((encodedhash[proof_difficulty] & 0xf0)>>4) != 0) return false;
         } catch (NoSuchAlgorithmException NSAE) {}
         return true;
     }
