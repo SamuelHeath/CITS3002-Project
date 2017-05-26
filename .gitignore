@@ -25,3 +25,6 @@ Wallet/nbproject
 /Wallet/build/
 /Wallet/dist/
 Wallet/build/built-jar.properties
+*.pem
+Miner/block-chain.dat
+Miner/block-chain.json
