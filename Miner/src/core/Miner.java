@@ -53,11 +53,12 @@ public class Miner implements Runnable {
      */
     public static Block proofOfWork(Block init_block) {
         Block b = init_block;
-        b.setMerkleRoot(calculateMerkleRoot(b));
-        byte[] merkleRoot = b.getMerkleRoot().getBytes(); // Adds variabillity
+        b.setMerkleRoot(calculateMerkleRoot(b)); // Adds variabillity
         System.out.printf("Merkel Root: 0x%s\n",b.getMerkleRoot());
         System.out.println(b.getPreviousHash());
-        byte[] prevHash = b.getPreviousHash().getBytes();
+        //Following two lines reduces size of byte arrays significantly.
+        byte[] merkleRoot = DatatypeConverter.parseHexBinary(b.getMerkleRoot()); 
+        byte[] prevHash = DatatypeConverter.parseHexBinary(b.getPreviousHash());
         byte[] const_header_bytes = concatByteArr(prevHash,merkleRoot);
         byte[] header_bytes = blockHeader2Bytes(b,const_header_bytes);
         long init_time = System.currentTimeMillis();
