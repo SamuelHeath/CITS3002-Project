@@ -5,8 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 /**
  * Handles the IO to what ever file it has.
