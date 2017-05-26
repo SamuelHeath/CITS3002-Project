@@ -40,14 +40,14 @@ public class ConnectionWorker implements Runnable {
             while ((string = bufferedreader.readLine()) != null) {
                     Message m = new Message(string);
                     switch (m.getType()) {
-                        case "REQBC":
+                        case "RQBC":
                                 pwrite.println(Miner.blockChainRequested(m));
                                 pwrite.flush();
                             break;
                         case "BCST":
                             Server.broadcastMessage(m);
                             break;
-                        case "TRNS":
+                        case "TX":
                             Miner.transactionMessage(m);
                             break;
                         default:

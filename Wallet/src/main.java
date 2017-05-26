@@ -1,12 +1,7 @@
 import com.google.gson.Gson;
 import java.io.*;
 import java.net.InetAddress;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.Signature;
-import java.security.SignatureException;
-import java.util.Random;
+import java.util.Scanner;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.SSLSession;
@@ -61,22 +56,31 @@ public class main {
                 
                 if (args[2].equals("--trans")) {
                     //Get latest hash off the stored bitcoin ledger, and add to below call.
-                    pwrite.println("REQBC;H");
+                    pwrite.println("RQBC;H");
                     pwrite.flush();
                     String[] input = args[3].split(" ");
                     if (input.length == 2) {
-                        Transaction t = new Transaction(KeyPairGen.publicKey2String(KeyPairGen.getPublicKey()),input[0],Double.valueOf(input[1]));
+                        Transaction t = new Transaction(KeyPairGen.publicKey2String(KeyPairGen.getPublicKey()),input[0],Double.parseDouble(input[1]));
+                        t.signTransaction();
+                        System.out.println("TX;"+new Gson().toJson(t, Transaction.class));
+                        Double d = Double.parseDouble(input[1]);
+                        while (!Wallet.checkTransactionAmount(d)) {
+                            System.out.print("Enter new transaction amount: ");
+                            Scanner s = new Scanner(System.in);
+                            d = s.nextDouble();
+                        }
+                        //Transaction t = new Transaction(KeyPairGen.publicKey2String(KeyPairGen.getPublicKey()),input[0],Double.parseDouble(input[1]));
                         t.signTransaction();
                         if (t.verifySignature()) {
+                            System.out.println("TX;"+new Gson().toJson(t, Transaction.class));
                             System.out.println("Verified Sig");
-                            pwrite.println("TRNS;"+new Gson().toJson(t, Transaction.class));
+                            pwrite.println("TX;"+new Gson().toJson(t, Transaction.class));
                             pwrite.flush();
                         } else { System.out.println("Couldn't verify signature."); System.exit(-1); }
-                        
                     } else { System.out.println("Unknown Command."); System.exit(-1); }
                 } else if (args[2].equals("--update")) {
                     System.out.println("");
-                    pwrite.println("REQBC;H");
+                    pwrite.println("RQBC;H");
                     pwrite.flush();
                 } else {
                     System.out.println("You must enter atleast 3 arguments");
@@ -87,6 +91,7 @@ public class main {
                 while ((server_resp = bufferedserverreader.readLine()) != null) {
                     Message m = new Message(server_resp);
                     switch (m.getType()) {
+                        //Block Chain Response
                         case "BCRS":
                             updateWallet(m);
                             break;
@@ -105,33 +110,7 @@ public class main {
     
     private static void updateWallet(Message m) {
         WalletIO.readBlockChainFromStream(m.getRawData());
-        System.out.println(WalletIO.getBalance());
-    }
-    
-    
-    private static byte[] sign(byte[] transaction, PrivateKey private_key) {
-		try {
-                    Signature s = Signature.getInstance("SHA256withRSA");
-		    s.initSign(private_key);
-		    s.update(transaction);
-		    byte[] signature = s.sign();
-		    
-                    return signature;
-		} catch (NoSuchAlgorithmException NSAE) {
-			NSAE.printStackTrace();
-			
-		} catch (InvalidKeyException IKE) { IKE.printStackTrace(); 
-                } catch (SignatureException SE) { SE.printStackTrace(); }
-	return null;	
-    }
-    
-    public static String genTrnsStr() {
-        String s = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-        Random rchar = new Random();
-        String transaction = "";
-        for (int i = 0; i < 64; i++) {
-            transaction = transaction + String.valueOf(s.charAt(rchar.nextInt(s.length())));
-        }
-        return transaction;
+        System.out.println("Balance: "+WalletIO.getBalance());
+        
     }
 }
