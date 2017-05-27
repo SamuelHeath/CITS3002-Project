@@ -92,6 +92,9 @@ public class Miner implements Runnable {
                 double_hash = sha256.digest();
             }
             b.setHash(DatatypeConverter.printHexBinary(double_hash));
+            try {
+                b.setBlockNumber(MinerIO.getBlockChain().getLatestBlockNumber()+1);
+            } catch (Exception E) { System.exit(1); }
             System.out.println("End Hash:   " + b.getHash());
             System.out.println("Time: " + (float)(System.currentTimeMillis() - init_time)/60000 + "min " + "Nonce: " + b.getNonce());
         } catch (NoSuchAlgorithmException NSAE) {}
@@ -253,17 +256,15 @@ public class Miner implements Runnable {
      * @return                  The current longest Blockchain of the system.
      */
     public static Message blockChainRequested(Message msg) {
-        /*if (msg.getRawData().equals("")) {
+        if (msg.getRawData().isEmpty()) {
             for (Block b: MinerIO.getBlockChain().getBlocks()) {
-                response.add(new Message("BCRS:"+b.blockToString()));
+                return new Message("BCRS:"+MinerIO.getBlockChainAsJson());
             }
         } else {
-            for (Block b : MinerIO.getBlockChain().getBlocksFromLastHash(msg.getRawData())) {
-                response.add(new Message("BCRS:"+b.blockToString()));
+            Block[] blks = MinerIO.getBlockChain().getBlocksFromBlockNumber(Integer.parseInt(msg.getRawData()));
+                return new Message("BKRS:"+new Gson().toJson(blks, Block[].class));
             }
-        }
-        return response;*/
-        return new Message("BCRS;"+MinerIO.getBlockChainAsJson());
+        return null;
     }
     
 }

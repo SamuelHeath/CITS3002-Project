@@ -56,7 +56,7 @@ public class main {
                 
                 if (args[2].equals("--trans")) {
                     //Get latest hash off the stored bitcoin ledger, and add to below call.
-                    pwrite.println("RQBC;H");
+                    pwrite.println("RQBC;");
                     pwrite.flush();
                     String[] input = args[3].split(" ");
                     if (input.length == 2) {
@@ -80,7 +80,7 @@ public class main {
                     } else { System.out.println("Unknown Command."); System.exit(-1); }
                 } else if (args[2].equals("--update")) {
                     System.out.println("");
-                    pwrite.println("RQBC;H");
+                    pwrite.println("RQBC;");
                     pwrite.flush();
                 } else {
                     System.out.println("You must enter atleast 3 arguments");

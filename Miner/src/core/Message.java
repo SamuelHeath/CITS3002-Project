@@ -3,8 +3,8 @@ package core;
 public class Message {
 
     private String msg_data;
-    // Types of messages: Request Block Chain, Request Response, Broadcast, Transaction
-    public enum Message_Type { RQBC, BCRS, BCST, TX };
+    // Types of messages: Request Block Chain, BlockChain Response, BlockResponse, Broadcast, Transaction
+    public enum Message_Type { RQBC, BCRS, BKRS, BCST, TX };
     private final Message_Type msg_type;
     
     /**
@@ -15,7 +15,12 @@ public class Message {
         // Split message components.
         String[] msg_comps = raw_msg.split(";");
         this.msg_type = Message_Type.valueOf(msg_comps[0]);
-        this.msg_data = msg_comps[1];
+        
+        try {
+            this.msg_data = msg_comps[1];
+        } catch (ArrayIndexOutOfBoundsException AIBE) {
+            this.msg_data = "";
+        }
     }
     
     /**

@@ -37,23 +37,28 @@ public class ConnectionWorker implements Runnable {
 
             String string = null;
             while ((string = bufferedreader.readLine()) != null) {
-                    Message m = new Message(string);
-                    switch (m.getType()) {
-                        case "RQBC":
-                                pwrite.println(Miner.blockChainRequested(m));
+                Message m = new Message(string);
+                switch (m.getType()) {
+                    case "RQBC":
+                            Message response = Miner.blockChainRequested(m);
+                            if (response != null) {
+                                pwrite.println();
                                 pwrite.flush();
-                            break;
-                        case "BCST":
-                            Server.broadcastMessage(m);
-                            break;
-                        case "TX":
-                            Miner.transactionMessage(m);
-                            break;
-                        default:
-                            pwrite.println(m.toString());
-                            pwrite.flush();
-                            break;
-                    }
+                            } else {
+                                System.out.println("No Response Provided :)");
+                            }
+                        break;
+                    case "BCST":
+                        Server.broadcastMessage(m);
+                        break;
+                    case "TX":
+                        Miner.transactionMessage(m);
+                        break;
+                    default:
+                        pwrite.println(m.toString());
+                        pwrite.flush();
+                        break;
+                }
             }
         } catch (IOException IOE) {
             Server.getConnections().remove(this.clientSock);

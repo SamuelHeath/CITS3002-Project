@@ -1,5 +1,5 @@
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
+import javax.xml.bind.DatatypeConverter;
 
 /**
  *
@@ -9,12 +9,13 @@ public class Block implements Serializable {
     
     private String block_hash;
     private String merkle_root;
-    private final Transaction[] block_transactions;
     private final String prev_hash;
     private final String coin_base;
+    private int block_number;
     private int time_stamp;
     private int block_nonce;
     private int block_transCount;
+    private final Transaction[] block_transactions;
     
     public Block(String previousHash, String coinBase, int timeStamp, int nonce, int transCount, Transaction[] transactions) {
         this.block_transactions = transactions;
@@ -55,26 +56,18 @@ public class Block implements Serializable {
         this.block_nonce = new_nonce;
     }
     
-    public void setHash(String hash) {
-        this.block_hash = hash;
-    }
+    public void setBlockNumber(int block_num) { this.block_number = block_num; }
     
-    public String getHash() {
-        return this.block_hash;
-    }
+    public int getBlockNumber() { return this.block_number; }
     
-    public byte[] getMerkleRoot() {
-        return this.merkle_root.getBytes(StandardCharsets.US_ASCII);
-    }
+    public void setHash(String hash) { this.block_hash = hash; }
     
-    public void setMerkleRoot(String new_root) {
-        this.merkle_root = new_root;
-    }
+    public String getHash() { return this.block_hash; }
     
-    public String merkle2String() {
-        String s = "";
-        s =Base58Check.encode(merkle_root.getBytes(StandardCharsets.US_ASCII), false);
-        return s;
+    public String getMerkleRoot() { return this.merkle_root; }
+    
+    public void setMerkleRoot(byte[] new_root) {
+        this.merkle_root = DatatypeConverter.printHexBinary(new_root);
     }
     
     public Transaction[] getTransactions() { return this.block_transactions; }
