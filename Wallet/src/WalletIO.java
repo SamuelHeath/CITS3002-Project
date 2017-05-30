@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import javax.xml.bind.DatatypeConverter;
 
 /**
  * Handles the IO to what ever file it has.
@@ -22,8 +23,11 @@ public class WalletIO implements Runnable {
                 //Reads serialized blockchain stored on computer
                 System.out.println("Reading Block Chain");
                 block_chain = readBlockChain(f);
+                Wallet.balance = getBalance();
                 System.out.println("Size: " + block_chain.getBlocks().size());
             } catch (FileNotFoundException FNFE) {}
+        } else {
+            Wallet.balance = 0.0;
         }
     }
     @Override
@@ -31,12 +35,32 @@ public class WalletIO implements Runnable {
         
     }
     
+    public static double updateBalance(Block[] b) {
+        double bal = Wallet.balance;
+        String pubKey = Base58Check.encode(KeyPairGen.getPublicKey().getEncoded(),false);
+        String pubKeyRec = KeyPairGen.getPublicKeyAddress(); //The easily bitcoin address
+        String zeroHex = DatatypeConverter.printHexBinary(new byte[32]);
+        for (Block block: b) {
+            for (Transaction t:block.getTransactions()) {
+                if (t.getSenderKey().equals(pubKey)) {
+                    bal -= t.getTransactionAmount();
+                } else if (t.getReceiverKey().equals(pubKeyRec)) {
+                    bal += t.getTransactionAmount();
+                } else if (t.getReceiverKey().equals(zeroHex)) {
+                    bal += t.getTransactionAmount();
+                }
+            }
+        }
+        Wallet.balance = bal;
+        return bal;
+    }
     
     public static double getBalance() {
         double balance = 0.0;
         
         String pubKey = Base58Check.encode(KeyPairGen.getPublicKey().getEncoded(),false);
         String pubKeyRec = KeyPairGen.getPublicKeyAddress(); //The easily bitcoin address
+        String zeroHex = DatatypeConverter.printHexBinary(new byte[32]); // The free coins given to all wallets by the system.
         for (Block b:block_chain.getBlocks()) {
             for (Transaction t:b.getTransactions()) {
                 if (t.getSenderKey().equals(pubKey)) {
@@ -46,7 +70,7 @@ public class WalletIO implements Runnable {
                 } else if (t.getReceiverKey().equals(pubKeyRec)) {
                     //Add
                     balance += t.getTransactionAmount();
-                } else if (t.getReceiverKey().equals("0000")) {
+                } else if (t.getReceiverKey().equals(zeroHex)) {
                     balance += t.getTransactionAmount();
                 }
             }
@@ -72,5 +96,20 @@ public class WalletIO implements Runnable {
         BlockChain bc = new BlockChain();
         block_chain = g.fromJson(s, bc.getClass());
         System.out.println("Latest BLock Hash: "+block_chain.getLastHash());
+    }
+    
+    public static void readBlocksFromStream(String s) {
+        Gson g = new Gson();
+        Block[] b = g.fromJson(s, Block[].class);
+        for (int i = b.length-1; i >= 0; i ++) {
+            //adds from the bottom of the array to maintain order of the block chain.
+            // As the miner will just send the array, added extra check to ensure it only adds blocks it doesnt already have.
+            try {
+                int blkNum = block_chain.getLatestBlockNumber();
+                if (b[i].getBlockNumber() > blkNum) {
+                    block_chain.addBlock(b[i]);
+                }
+            } catch (Exception E) {}
+        }
     }
 }

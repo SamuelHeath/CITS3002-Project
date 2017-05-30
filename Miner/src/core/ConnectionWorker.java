@@ -42,7 +42,7 @@ public class ConnectionWorker implements Runnable {
                     case "RQBC":
                             Message response = Miner.blockChainRequested(m);
                             if (response != null) {
-                                pwrite.println();
+                                pwrite.println(response.toString());
                                 pwrite.flush();
                             } else {
                                 System.out.println("No Response Provided :)");
