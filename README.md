@@ -7,6 +7,10 @@
 - [BouncyCastle - Provider 157](https://www.bouncycastle.org/latest_releases.html).
 - [gson - 2.7](https://repo1.maven.org/maven2/com/google/code/gson/gson/2.7/).
 
+## Usage:
+- wallet    ip_address  port_no [--update] [--tx]
+- miner port_no lvl_difficulty
+### Miner:
 ## Requirements
 ### Wallet:
 - Digital Wallet will be a file with a series of records which are successful transactions as recorded on the blockchain.
