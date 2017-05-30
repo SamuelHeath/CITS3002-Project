@@ -53,14 +53,21 @@ public class Miner implements Runnable {
      */
     public static Block proofOfWork(Block init_block) {
         Block b = init_block;
+        
         b.setMerkleRoot(calculateMerkleRoot(b)); // Adds variabillity
-        System.out.printf("Merkel Root: 0x%s\n",b.getMerkleRoot());
-        System.out.println(b.getPreviousHash());
+        System.out.printf("\nMerkel Root: 0x%s\n",b.getMerkleRoot());
+        
         //Following two lines reduces size of byte arrays significantly.
         byte[] merkleRoot = DatatypeConverter.parseHexBinary(b.getMerkleRoot()); 
         byte[] prevHash = DatatypeConverter.parseHexBinary(b.getPreviousHash());
         byte[] const_header_bytes = concatByteArr(prevHash,merkleRoot);
-        byte[] header_bytes = blockHeader2Bytes(b,const_header_bytes);
+        byte[] const_hshd_header = new byte[32];
+        try {
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            const_hshd_header = sha256.digest(const_header_bytes); //hash down as its long and slows down operations
+        } catch (NoSuchAlgorithmException NSAE) {}
+        
+        byte[] header_bytes = blockHeader2Bytes(b,const_hshd_header);
         long init_time = System.currentTimeMillis();
         try {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
@@ -75,7 +82,7 @@ public class Miner implements Runnable {
                 if (numHashes == Long.MAX_VALUE) {numHashes = 0;}
                 numHashes++;
                 
-                if (System.currentTimeMillis()-init_time2 > 15000) {
+                if (System.currentTimeMillis()-init_time2 > 30000) {
                     System.out.println("Hashes/sec "+numHashes/30);
                     numHashes=0;
                     init_time2 = System.currentTimeMillis();
@@ -87,7 +94,8 @@ public class Miner implements Runnable {
                     b.setNonce(0);
                 }
                 b.setNonce(b.getNonce()+1);
-                header_bytes = blockHeader2Bytes(b,const_header_bytes);
+                //Use the hashed header
+                header_bytes = blockHeader2Bytes(b,const_hshd_header);
                 sha256.update(header_bytes);
                 double_hash = sha256.digest();
             }
@@ -174,7 +182,7 @@ public class Miner implements Runnable {
             for (int i=0; i < proof_difficulty; i++) {
                 if (encodedhash[i] != 0) return false;
             }
-            if (((encodedhash[proof_difficulty] & 0xf0)>>4) != 0) return false;
+            //if (((encodedhash[proof_difficulty] & 0xf0)>>4) != 0) return false;
         } catch (NoSuchAlgorithmException NSAE) {}
         return true;
     }
@@ -205,6 +213,7 @@ public class Miner implements Runnable {
      * @return 
      */
     private static Block createNewBlock(Transaction t) {
+        //Just to initialise the object.
         Transaction coin_base_trans = new Transaction("",
                 "00000000000000000000000000000000",(double)2.5);
         try {
@@ -242,13 +251,13 @@ public class Miner implements Runnable {
      */
     public static void transactionMessage(Message transaction) {
         Block currBlock = createNewBlock((Transaction) new Gson().fromJson(transaction.getRawData(), Transaction.class));
-        System.out.println("Transactions:"+currBlock.getTransactionCount());
-        System.out.println("Previous Hash: "+currBlock.getPreviousHash());
+        System.out.println("\nPrevious Hash: "+currBlock.getPreviousHash());
         System.out.println("Coin Base Address: "+currBlock.getCoinBase());
         currBlock = proofOfWork(currBlock);
         MinerIO.getBlockChain().addBlock(currBlock);
         MinerIO.writeBlockChain();
-        Server.broadcastMessage(new Message("BCRS;"+MinerIO.getBlockChainAsJson()));
+        //Sends the new block as a block array as this fits the wallet code for when wallets want only some blocks.
+        Server.broadcastMessage(new Message("BKRS;"+new Gson().toJson(new Block[] {currBlock}, Block[].class)));
     }
     
     /**
@@ -258,11 +267,11 @@ public class Miner implements Runnable {
     public static Message blockChainRequested(Message msg) {
         if (msg.getRawData().isEmpty()) {
             for (Block b: MinerIO.getBlockChain().getBlocks()) {
-                return new Message("BCRS:"+MinerIO.getBlockChainAsJson());
+                return new Message("BCRS;"+MinerIO.getBlockChainAsJson());
             }
         } else {
             Block[] blks = MinerIO.getBlockChain().getBlocksFromBlockNumber(Integer.parseInt(msg.getRawData()));
-                return new Message("BKRS:"+new Gson().toJson(blks, Block[].class));
+                return new Message("BKRS;"+new Gson().toJson(blks, Block[].class));
             }
         return null;
     }
