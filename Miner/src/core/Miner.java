@@ -2,7 +2,6 @@ package core;
 
 import com.google.gson.Gson;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -213,12 +212,7 @@ public class Miner implements Runnable {
      * @return 
      */
     private static Block createNewBlock(Transaction t) {
-        //Just to initialise the object.
-        Transaction coin_base_trans = new Transaction("",
-                "00000000000000000000000000000000",(double)2.5);
-        try {
-            coin_base_trans = new Transaction("",bytes2String(Base58Check.encode(KeyPairGen.getPublicKey().getEncoded(),false).getBytes()),(double)2.5);
-        } catch (NoSuchAlgorithmException NSAE) {}
+        Transaction coin_base_trans = new Transaction("",KeyPairGen.getPublicKeyAddress(),(double)2.5);
         coin_base_trans.signCoinBaseTransaction(); //Edits the signature field of this object to be signed.
         if (t.verifySignature()) {
             System.out.println("Verified Transaction Signature");
