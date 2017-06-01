@@ -28,10 +28,9 @@ public class WalletConnection {
             }
             
             try {
-                String current_dir = System.getProperty("user.dir") + "/cacerts.jks";
-                System.out.println(current_dir);
-                System.setProperty("javax.net.ssl.trustStore", current_dir);
-                System.setProperty("javax.net.ssl.trustStorePassword", "123456");
+                System.setProperty("javax.net.ssl.keyStore", "keystore.jks");
+		System.setProperty("javax.net.ssl.keyStorePassword","alicepassword");
+		System.setProperty("javax.net.ssl.trustStore", "truststore.jks");
                 
                 SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
                 SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket(InetAddress.getByName(args[0]), Integer.parseInt(args[1]));

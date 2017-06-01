@@ -78,32 +78,20 @@ public class Server implements Runnable {
     private void init() {
         try {
             
-            KeyStore ks = KeyStore.getInstance("JKS");
-            String current_dir = System.getProperty("user.dir") + "/keystore.jks";
-            ks.load(new FileInputStream(current_dir), "123456".toCharArray());
-            SSLContext sc = SSLContext.getInstance("TLSv1.2");
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            kmf.init(ks, "123456".toCharArray());
             
-            sc.init(kmf.getKeyManagers(), null, null);
+            System.setProperty("javax.net.ssl.keyStore","keystore.jks");
+            System.setProperty("javax.net.ssl.keyStorePassword","serverpassword");
+            System.setProperty("javax.net.ssl.trustStore","truststore.jks");
+
+            SSLServerSocketFactory serverSocketFactory = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
             
-            ServerSockFactory = sc.getServerSocketFactory();
-            ServerSock = (SSLServerSocket) ServerSockFactory.createServerSocket(NETWORK_PORT);
+            ServerSock = (SSLServerSocket) serverSocketFactory.createServerSocket(NETWORK_PORT);
             ServerSock.setEnabledCipherSuites(ServerSock.getSupportedCipherSuites());
+            ServerSock.setNeedClientAuth(true);
             
             //ServerSock.setNeedClientAuth(true);
             
             printServerInformation();
-            
-        } catch (CertificateException CE) {
-
-        } catch (KeyManagementException KME) {
-            
-        } catch (UnrecoverableKeyException UKE) {
-            
-        } catch (NoSuchAlgorithmException NSAE) {
-            
-        } catch (KeyStoreException KSE) {
         
         }catch (IOException IOE) { IOE.printStackTrace();  }
     }
