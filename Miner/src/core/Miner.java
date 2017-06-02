@@ -265,8 +265,12 @@ public class Miner implements Runnable {
             }
         } else {
             Block[] blks = MinerIO.getBlockChain().getBlocksFromBlockNumber(Integer.parseInt(msg.getRawData()));
+            if (blks.length == 0) {
+                return new Message("NBKN;");
+            } else {
                 return new Message("BKRS;"+new Gson().toJson(blks, Block[].class));
             }
+        }
         return null;
     }
     

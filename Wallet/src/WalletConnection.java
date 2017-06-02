@@ -54,7 +54,7 @@ public class WalletConnection {
                 OutputStream outputstream = sslsocket.getOutputStream();
                 pwrite = new PrintWriter(outputstream, true);
                 
-                KeyPairGen.generateKeys(); //Required!
+                KeyPairGen.readKeys(); //Required!
                 System.out.println("Public Key: " + KeyPairGen.getPublicKeyAddress() + "\n");
                 
                 WalletIO wio = new WalletIO();
@@ -75,6 +75,11 @@ public class WalletConnection {
                         case "BKRS":
                             updateWallet(m);
                             break;
+                        case "NBKN":
+                            System.out.println("I'm up to date yay :)");
+                            //If the miner says there is nothing needed to change,
+                            //then break the while loop and just chill out.
+                            Wallet.responseOccured(true);
                         default:
                             System.out.println(m.getRawData());
                     }
@@ -98,7 +103,7 @@ public class WalletConnection {
             System.out.println("\nBalance: "+WalletIO.getBalance() + "\n");
         } else {
             WalletIO.readBlocksFromStream(m.getRawData());
-            System.out.println("\nBalance: "+WalletIO.updateBalance(new Gson().fromJson(m.getRawData(), Block[].class)));
+            System.out.println("\nBalance: "+Wallet.balance);
         }
         
     }

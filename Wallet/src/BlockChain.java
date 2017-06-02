@@ -27,22 +27,24 @@ public class BlockChain implements Serializable {
     public Block[] getBlocksFromBlockNumber(int last_block_number) {
         try {
             if (last_block_number > getLatestBlockNumber() || last_block_number < 0) {
-                // Error
-                return (Block[]) block_chain.toArray();
+                // Error, but dont alert the Wallet.
+                return new Block[0];
             } else if (last_block_number == getLatestBlockNumber()) {
-                return null; //Nothing
+                return new Block[0]; //Up to date
             }else {
-                int blockDiff = last_block_number - getLatestBlockNumber();
+                //Re-invert and count down.
+                int blockDiff = -1*(last_block_number - getLatestBlockNumber());
+                System.out.println("Retrieving Blocks");
                 Block[] blocks = new Block[blockDiff];
-                for (int i = blockDiff; i> 0; i++) {
-                    blocks[i-1] = block_chain.get(i);
+                for (int i = 0; i < blockDiff; i++) {
+                    blocks[i] = block_chain.get(i);
                 }
                 return blocks;
             }
         } catch (Exception E) {
             System.out.println("Incorrect Block Hash Requested.");
         }
-        return null;
+        return new Block[0];
     } 
     
     public ArrayList<Block> getBlocksFromLastHash(String last_hash) {

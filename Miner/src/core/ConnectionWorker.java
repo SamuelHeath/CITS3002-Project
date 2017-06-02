@@ -43,10 +43,13 @@ public class ConnectionWorker implements Runnable {
                             Message response = Miner.blockChainRequested(m);
                             if (response != null) {
                                 pwrite.println(response.toString());
-                                pwrite.flush();
                             } else {
                                 System.out.println("No Response Provided :)");
+                                //Unneeded but just used to show im making a message.
+                                pwrite.println(new Message("NBKN;").toString());
                             }
+                            //Will always need to flush the writer.
+                            pwrite.flush();
                         break;
                     case "BCST":
                         Server.broadcastMessage(m);

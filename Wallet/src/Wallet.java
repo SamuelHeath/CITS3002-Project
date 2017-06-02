@@ -18,7 +18,7 @@ public class Wallet implements Runnable {
         
         while (!update) {
             if (!(balance == WalletIO.getBalance())) {
-                responseOccured(true); // untoggle.
+                responseOccured(true); // untoggle when we get a response.
             }
         }
         

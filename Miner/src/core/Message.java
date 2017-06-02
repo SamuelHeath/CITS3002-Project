@@ -3,8 +3,9 @@ package core;
 public class Message {
 
     private String msg_data;
-    // Types of messages: Request Block Chain, BlockChain Response, BlockResponse, Broadcast, Transaction
-    public enum Message_Type { RQBC, BCRS, BKRS, BCST, TX };
+    // Types of messages: Request Block Chain(RQBC), BlockChain Response(BCRS), 
+    // BlockResponse (BKRS), No Blocks Needed(NBKN), Broadcast(BCST), Transaction (TX).
+    public enum Message_Type { RQBC, BCRS, BKRS, NBKN, BCST, TX };
     private final Message_Type msg_type;
     
     /**
