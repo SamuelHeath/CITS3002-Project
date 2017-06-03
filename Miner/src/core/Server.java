@@ -42,7 +42,6 @@ public class Server implements Runnable {
             
             try {
                 clientSock = (SSLSocket) ServerSock.accept();
-                System.out.println("Made it");
                 ConnectionWorker worker = new ConnectionWorker(clientSock);
                 CONNECTIONS.add(worker);
                 new Thread(worker).start();
@@ -80,8 +79,8 @@ public class Server implements Runnable {
             
             
             System.setProperty("javax.net.ssl.keyStore","keystore.jks");
-            System.setProperty("javax.net.ssl.keyStorePassword","serverpassword");
-            System.setProperty("javax.net.ssl.trustStore","truststore.jks");
+            System.setProperty("javax.net.ssl.keyStorePassword","password");
+            System.setProperty("javax.net.ssl.trustStore","miner.jks");
 
             SSLServerSocketFactory serverSocketFactory = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
             
@@ -116,7 +115,6 @@ public class Server implements Runnable {
     }
     
     private void printServerInformation() {
-        System.out.println("Server socket class: "+this.ServerSock.getClass());
         System.out.println("Allows SSL Sockets: " + this.ServerSock.getEnableSessionCreation());
         System.out.println("Use client mode: "+this.ServerSock.getUseClientMode());
         System.out.println("Need authentication: "+this.ServerSock.getNeedClientAuth());

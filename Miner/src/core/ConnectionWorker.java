@@ -24,6 +24,7 @@ public class ConnectionWorker implements Runnable {
     @Override
     public void run() {
         try {
+            clientSock.setNeedClientAuth(true);
             clientSock.startHandshake();
             SSLSession sslSession = clientSock.getSession();
             System.out.println(sslSession.getProtocol());

@@ -18,7 +18,7 @@ public class Transaction implements Serializable {
     
     private final String sender_key;
     private final String receiver_key;
-    private final double coin_amount;
+    private double coin_amount;
     private String signature;
     
     public Transaction(String senderKey, String recieverKey, double chrisCoins) {
@@ -36,6 +36,8 @@ public class Transaction implements Serializable {
     public String getSenderKey() { return this.sender_key; }
     
     public String getReceiverKey() { return this.receiver_key; }
+    
+    public void setTransactionAmount(double new_amount) { this.coin_amount = new_amount; }
     
     public double getTransactionAmount() {return this.coin_amount; }
     

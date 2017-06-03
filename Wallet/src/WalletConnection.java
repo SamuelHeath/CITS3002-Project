@@ -29,23 +29,20 @@ public class WalletConnection {
             
             try {
                 System.setProperty("javax.net.ssl.keyStore", "keystore.jks");
-		System.setProperty("javax.net.ssl.keyStorePassword","alicepassword");
-		System.setProperty("javax.net.ssl.trustStore", "truststore.jks");
+		System.setProperty("javax.net.ssl.keyStorePassword","password");
+		System.setProperty("javax.net.ssl.trustStore", "wallet.jks");
                 
                 SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
                 SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket(InetAddress.getByName(args[0]), Integer.parseInt(args[1]));
                 
+                sslsocket.setNeedClientAuth(true);
                 sslsocket.startHandshake();
-                System.out.println("Connected to Network");
+                System.out.println("Connected to Miner\n");
                 
                 System.out.println("Need client authentication = "+sslsocket.getNeedClientAuth());
 		SSLSession sslsesh = sslsocket.getSession();
 		System.out.println("Cipher suite = "+sslsesh.getCipherSuite());
 		System.out.println("Protocol = "+sslsesh.getProtocol() + "\n");
-                
-                InputStream cmdstream = System.in;
-                InputStreamReader cmdstreamreader = new InputStreamReader(cmdstream);
-                BufferedReader bufferedcmdreader = new BufferedReader(cmdstreamreader);
                 
                 InputStream serverstream = sslsocket.getInputStream();
                 InputStreamReader serverstreamreader = new InputStreamReader(serverstream);
@@ -55,7 +52,7 @@ public class WalletConnection {
                 pwrite = new PrintWriter(outputstream, true);
                 
                 KeyPairGen.readKeys(); //Required!
-                System.out.println("Public Key: " + KeyPairGen.getPublicKeyAddress() + "\n");
+                System.out.println("Chriscoin Address: " + KeyPairGen.getPublicKeyAddress() + "\n");
                 
                 WalletIO wio = new WalletIO();
                 new Thread(wio).start();

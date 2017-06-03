@@ -157,7 +157,10 @@ public class WalletIO implements Runnable {
         Gson g = new Gson();
         BlockChain bc = new BlockChain();
         block_chain = g.fromJson(s, bc.getClass());
-        System.out.println("Latest BLock Hash: "+block_chain.getLastHash());
+        System.out.println("Latest Block Hash: "+block_chain.getLastHash());
+        try {
+            System.out.println("Latest Block Num: "+block_chain.getLatestBlockNumber());
+        } catch (Exception E) {}
     }
     
     /**

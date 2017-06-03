@@ -57,16 +57,11 @@ public class Miner implements Runnable {
         System.out.printf("\nMerkel Root: 0x%s\n",b.getMerkleRoot());
         
         //Following two lines reduces size of byte arrays significantly.
-        byte[] merkleRoot = DatatypeConverter.parseHexBinary(b.getMerkleRoot()); 
-        byte[] prevHash = DatatypeConverter.parseHexBinary(b.getPreviousHash());
+        byte[] merkleRoot = b.getMerkleRoot().getBytes(); 
+        byte[] prevHash = b.getPreviousHash().getBytes();
         byte[] const_header_bytes = concatByteArr(prevHash,merkleRoot);
-        byte[] const_hshd_header = new byte[32];
-        try {
-            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
-            const_hshd_header = sha256.digest(const_header_bytes); //hash down as its long and slows down operations
-        } catch (NoSuchAlgorithmException NSAE) {}
         
-        byte[] header_bytes = blockHeader2Bytes(b,const_hshd_header);
+        byte[] header_bytes = blockHeader2Bytes(b,const_header_bytes);
         long init_time = System.currentTimeMillis();
         try {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
@@ -94,7 +89,7 @@ public class Miner implements Runnable {
                 }
                 b.setNonce(b.getNonce()+1);
                 //Use the hashed header
-                header_bytes = blockHeader2Bytes(b,const_hshd_header);
+                header_bytes = blockHeader2Bytes(b,const_header_bytes);
                 sha256.update(header_bytes);
                 double_hash = sha256.digest();
             }
@@ -118,7 +113,7 @@ public class Miner implements Runnable {
         for (int i = 0; i < proof_difficulty; i++) {
             if (hash[i] != 0) return false;
         }
-        if (((hash[proof_difficulty] & 0xf0) >> 4) != 0) return false;
+        if ((hash[proof_difficulty] >> 4) != 0) return false;
         return true;
     }
     
@@ -142,7 +137,7 @@ public class Miner implements Runnable {
     }
     
      private static byte[] calculateMerkleRoot(Block b) {
-        
+        //To calculate the merkle use the whole transaction except the amount.
         byte[] merkle = new byte[32];
         try {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
@@ -207,6 +202,26 @@ public class Miner implements Runnable {
     }
     
     /**
+     * @return                  Changes the reward for a block based on difficulty.
+     */
+    private static double rewardAmount(Block b) {
+        String hash = b.getHash();
+        int numZeros = 0;
+        for (char c : hash.toCharArray()) { 
+            if (c == '0') { 
+                numZeros++;
+            } else if (c != '0') {
+                break;
+            }
+        }
+        // Atleast 1 needed to stop negative values from the log calculation
+        if (numZeros == 0 ) { numZeros = 1; }
+        //The default difficulty results in a reward of 4 coins, whereas max difficulty
+        // (32 -> 64 0's as its in hex) will get 10 coins.
+        return Math.floor(Math.log(numZeros)*2.790553133);
+    }
+    
+    /**
      * 
      * @param transactionMessage
      * @return 
@@ -248,6 +263,8 @@ public class Miner implements Runnable {
         System.out.println("\nPrevious Hash: "+currBlock.getPreviousHash());
         System.out.println("Coin Base Address: "+currBlock.getCoinBase());
         currBlock = proofOfWork(currBlock);
+        //Change the coinbase reward
+        currBlock.getTransactions()[0].setTransactionAmount(rewardAmount(currBlock));
         MinerIO.getBlockChain().addBlock(currBlock);
         MinerIO.writeBlockChain();
         //Sends the new block as a block array as this fits the wallet code for when wallets want only some blocks.
@@ -266,6 +283,8 @@ public class Miner implements Runnable {
         } else {
             Block[] blks = MinerIO.getBlockChain().getBlocksFromBlockNumber(Integer.parseInt(msg.getRawData()));
             if (blks.length == 0) {
+                //Tell the wallet its up to date, BUT could have had an error.
+                //Assume miner always has most up to date blockchain.
                 return new Message("NBKN;");
             } else {
                 return new Message("BKRS;"+new Gson().toJson(blks, Block[].class));
