@@ -15,7 +15,7 @@ import net.Message;
  * Handles the IO to what ever file it has.
  * @author Samuel James Serwan Heath
  */
-public class WalletIO implements Runnable {
+public class WalletIO {
     
     private static BlockChain block_chain = new BlockChain();
     private static final String CHAIN_FILENAME = "block-chain.dat";
@@ -35,14 +35,10 @@ public class WalletIO implements Runnable {
             } catch (FileNotFoundException FNFE) {
             } catch (Exception E) {}
         } else {
+            //If there is no blockchain file request the entire thing.
             WalletConnection.sendMessage(new Message("RQBC;"));
             Wallet.balance = 0.0;
         }
-    }
-    
-    @Override
-    public void run() {
-        //Just run it on another thread.
     }
     
     /**
@@ -95,6 +91,7 @@ public class WalletIO implements Runnable {
             }
         }
         writeBlockChain(new File(CHAIN_FILENAME));
+        Wallet.balance = balance;
         return balance;
     }
     
@@ -158,9 +155,6 @@ public class WalletIO implements Runnable {
         BlockChain bc = new BlockChain();
         block_chain = g.fromJson(s, bc.getClass());
         System.out.println("Latest Block Hash: "+block_chain.getLastHash());
-        try {
-            System.out.println("Latest Block Num: "+block_chain.getLatestBlockNumber());
-        } catch (Exception E) {}
     }
     
     /**

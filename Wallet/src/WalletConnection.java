@@ -17,6 +17,7 @@ import net.Message;
 public class WalletConnection {
     
     private static PrintWriter pwrite;
+    private static Wallet w;
     
     public static void main(String[] args) {
         //PrivateKey privKey = (PrivateKey) keyStore.getKey("my-private-key", "123456".toCharArray());
@@ -54,10 +55,7 @@ public class WalletConnection {
                 KeyPairGen.readKeys(); //Required!
                 System.out.println("Chriscoin Address: " + KeyPairGen.getPublicKeyAddress() + "\n");
                 
-                WalletIO wio = new WalletIO();
-                new Thread(wio).start();
-                
-                Wallet w = new Wallet(args);
+                w = new Wallet(args);
                 new Thread(w).start();
                 
                 String server_resp = null;
@@ -76,7 +74,7 @@ public class WalletConnection {
                             System.out.println("I'm up to date yay :)");
                             //If the miner says there is nothing needed to change,
                             //then break the while loop and just chill out.
-                            Wallet.responseOccured(true);
+                            Wallet.setResponse(true);
                         default:
                             System.out.println(m.getRawData());
                     }
@@ -96,11 +94,15 @@ public class WalletConnection {
      */
     private static void updateWallet(Message m) {
         if (m.getType().equals("BCRS")) {
-            WalletIO.readBlockChainFromStream(m.getRawData());
-            System.out.println("\nBalance: "+WalletIO.getBalance() + "\n");
+            w.getIO().readBlockChainFromStream(m.getRawData());
+            String balance = String.format("%.8f", WalletIO.getBalance());
+            System.out.println("\nBalance: "+ balance);
+            Wallet.setResponse(true);
         } else {
-            WalletIO.readBlocksFromStream(m.getRawData());
-            System.out.println("\nBalance: "+Wallet.balance);
+            w.getIO().readBlocksFromStream(m.getRawData());
+            String balance = String.format("%.8f", WalletIO.getBalance());
+            System.out.println("\nBalance: "+balance);
+            Wallet.setResponse(true);
         }
         
     }
