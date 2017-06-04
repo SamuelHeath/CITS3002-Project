@@ -62,6 +62,8 @@ public class Miner implements Runnable {
         byte[] const_header_bytes = concatByteArr(prevHash,merkleRoot);
         
         byte[] header_bytes = blockHeader2Bytes(b,const_header_bytes);
+        
+        long total_hashes = 0;
         long init_time = System.currentTimeMillis();
         try {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
@@ -92,13 +94,15 @@ public class Miner implements Runnable {
                 header_bytes = blockHeader2Bytes(b,const_header_bytes);
                 sha256.update(header_bytes);
                 double_hash = sha256.digest();
+                total_hashes++;
             }
             b.setHash(DatatypeConverter.printHexBinary(double_hash));
             try {
                 b.setBlockNumber(MinerIO.getBlockChain().getLatestBlockNumber()+1);
             } catch (Exception E) { System.exit(1); }
             System.out.println("End Hash:   " + b.getHash());
-            System.out.println("Time: " + (float)(System.currentTimeMillis() - init_time)/60000 + "min " + "Nonce: " + b.getNonce());
+            long timeDiff = (System.currentTimeMillis() - init_time)/1000;
+            System.out.println("Time: " + (float)(timeDiff)/60 + " min " + "Average Hashes/s: " + total_hashes/timeDiff + " Nonce: " + b.getNonce());
         } catch (NoSuchAlgorithmException NSAE) {}
         return b;
     }
@@ -216,9 +220,9 @@ public class Miner implements Runnable {
         }
         // Atleast 1 needed to stop negative values from the log calculation
         if (numZeros == 0 ) { numZeros = 1; }
-        //The default difficulty results in a reward of 4 coins, whereas max difficulty
+        //The default difficulty results in a reward of 3 coins, whereas max difficulty
         // (32 -> 64 0's as its in hex) will get 10 coins.
-        return Math.floor(Math.log(numZeros)*2.790553133);
+        return Math.floor(Math.log(numZeros)*1.541695028);
     }
     
     /**
