@@ -17,7 +17,7 @@ import javax.net.ssl.SSLSocket;
 
 /**
  *
- * @author Samuel Heath
+ * @author Samuel Heath & Nerces
  */
 public class Server implements Runnable {
     

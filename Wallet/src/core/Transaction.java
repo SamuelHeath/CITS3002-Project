@@ -1,3 +1,5 @@
+package core;
+
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -9,7 +11,7 @@ import java.security.SignatureException;
 
 /**
  *
- * @author Samuel Heath
+ * @author Samuel Heath & Nerces
  */
 public class Transaction implements Serializable {
     

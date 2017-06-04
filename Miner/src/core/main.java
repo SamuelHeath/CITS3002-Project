@@ -2,7 +2,7 @@ package core;
 
 /**
  *
- * @author Samuel Heath
+ * @author Samuel Heath & Nerces
  */
 public class main {
 

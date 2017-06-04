@@ -1,15 +1,20 @@
+package core;
+
 
 import com.google.gson.Gson;
 import java.util.Scanner;
-import net.Message;
 
+/**
+ * 
+ * @author Samuel Heath & Nerces
+ */
 public class Wallet implements Runnable {
     
     private static Message msg;
     public static boolean update = false;
     public static double balance;
     private static double trans_amount;
-    private static String sender_address;
+    private static String receiver_address;
     private WalletIO wio;
     
     @Override
@@ -34,7 +39,7 @@ public class Wallet implements Runnable {
                 Scanner s = new Scanner(System.in);
                 trans_amount = s.nextDouble();
             }
-            Transaction t = new Transaction(KeyPairGen.publicKey2String(KeyPairGen.getPublicKey()),sender_address,trans_amount);
+            Transaction t = new Transaction(KeyPairGen.publicKey2String(KeyPairGen.getPublicKey()),receiver_address,trans_amount);
             t.signTransaction();
             
             if (t.verifySignature()) {
@@ -54,8 +59,6 @@ public class Wallet implements Runnable {
                 System.exit(1);
             }
         }
-        //Exit once the miner is done.
-        System.exit(1);
     }
     
     /**
@@ -68,10 +71,17 @@ public class Wallet implements Runnable {
             msg = new Message("RQBC;");
         } else if (args.length == 4) {
             String[] txmsg = args[3].split(" ");
+            msg = new Message("TX;"); // Initially create a message header.
             if (txmsg.length == 2) {
-                msg = new Message("TX;"); // Initially create a message header.
-                sender_address = txmsg[0];
+                receiver_address = txmsg[0];
                 trans_amount = Double.parseDouble(txmsg[1]);
+            } else if (txmsg.length == 1) {
+                receiver_address = KeyPairGen.getReceiverAddress();
+                if (receiver_address.isEmpty()) {
+                    System.out.println("Did not properly read the receiver address.");
+                }
+                System.out.println("Sending transaction too address " + receiver_address);
+                trans_amount = Double.parseDouble(txmsg[0]);
             } else {
                 System.out.println("Invalid Command");
                 System.exit(1);

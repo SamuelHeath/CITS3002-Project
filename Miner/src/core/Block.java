@@ -5,7 +5,7 @@ import javax.xml.bind.DatatypeConverter;
 
 /**
  *
- * @author Samuel Heath
+ * @author Samuel Heath & Nerces
  */
 public class Block implements Serializable {
     

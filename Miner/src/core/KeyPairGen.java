@@ -30,7 +30,7 @@ import org.bouncycastle.util.io.pem.PemWriter;
         
 /**
  *
- * @author Samuel Heath
+ * @author Samuel Heath & Nerces
  */
 
 public class KeyPairGen {

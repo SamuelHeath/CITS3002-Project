@@ -1,5 +1,9 @@
 package core;
 
+/**
+ * 
+ * @author Samuel Heath & Nerces
+ */
 public class Message {
 
     private String msg_data;

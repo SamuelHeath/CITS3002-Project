@@ -1,9 +1,11 @@
+package core;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  *
- * @author Samuel Heath
+ * @author Samuel Heath & Nerces
  */
 public class BlockChain implements Serializable {
     

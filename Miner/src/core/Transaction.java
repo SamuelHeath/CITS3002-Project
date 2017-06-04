@@ -12,7 +12,7 @@ import java.security.SignatureException;
 
 /**
  *
- * @author Samuel Heath
+ * @author Samuel Heath & Nerces
  */
 public class Transaction implements Serializable {
     

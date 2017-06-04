@@ -1,3 +1,5 @@
+package core;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -32,7 +34,7 @@ import org.bouncycastle.util.io.pem.PemWriter;
         
 /**
  *
- * @author Samuel Heath
+ * @author Samuel Heath & Nerces
  */
 
 public class KeyPairGen {
@@ -42,6 +44,7 @@ public class KeyPairGen {
     private static PublicKey coin_base_key;
     private static final String PUBLIC_KEY_NAME = "public.pem";
     private static final String PRIVATE_KEY_NAME = "private.pem";
+    private static final String RECIEVER_ADDRESS_NAME = "receiver.pem";
     
     public static void readKeys() {
         java.security.Security.addProvider(new BouncyCastleProvider());
@@ -50,11 +53,11 @@ public class KeyPairGen {
         if (pubFile.exists() && priFile.exists()) {
             try {
                 System.out.println("Reading Keys.");
-                PemReader priR = new PemReader(new BufferedReader(new FileReader(PRIVATE_KEY_NAME)));
+                PemReader priR = new PemReader(new BufferedReader(new FileReader(priFile)));
                 PemObject priO = priR.readPemObject();
                 PKCS8EncodedKeySpec key = new PKCS8EncodedKeySpec(priO.getContent());
                 miner_private_key = (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(key);
-                PemReader pubR  = new PemReader(new InputStreamReader(new FileInputStream(PUBLIC_KEY_NAME)));
+                PemReader pubR  = new PemReader(new InputStreamReader(new FileInputStream(pubFile)));
                 PemObject pubO = pubR.readPemObject();
                 X509EncodedKeySpec pubkey = new X509EncodedKeySpec(pubO.getContent());
                 coin_base_key = (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(pubkey);
@@ -69,6 +72,30 @@ public class KeyPairGen {
         } else {
             System.out.println("Couldn't Find Keys.");
             generateKeys();
+        }
+    }
+    
+    public static String getReceiverAddress() {
+        File f = new File(RECIEVER_ADDRESS_NAME);
+        java.security.Security.addProvider(new BouncyCastleProvider());
+        if (f.exists()) {
+            System.out.println("\nReading receiver's key");
+            String recAddress = "";
+            try {
+                PemReader addressR = new PemReader(new BufferedReader(new FileReader(f)));
+                PemObject addressO = addressR.readPemObject();
+                X509EncodedKeySpec address = new X509EncodedKeySpec(addressO.getContent());
+                PublicKey recPK = (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(address);
+                recAddress = receiverKey2Address(recPK);
+            } catch (FileNotFoundException FNFE) {
+            } catch (NoSuchAlgorithmException NSAE) {
+            } catch (InvalidKeySpecException IKSE) {
+            } catch (IOException IOE) {}
+            return recAddress;
+        } else {
+            System.out.println("\nNo receiving address given.\n");
+            System.exit(-1);
+            return "";
         }
     }
     
@@ -89,6 +116,18 @@ public class KeyPairGen {
             
         }
         
+    }
+    
+    private static String receiverKey2Address(PublicKey pk) {
+        byte[] address = new byte[20];
+        try {
+            byte[] pubKey = MessageDigest.getInstance("SHA-256").digest(coin_base_key.getEncoded());
+            RIPEMD160Digest ripe = new RIPEMD160Digest();
+            ripe.update(pubKey, 0, pubKey.length);
+            ripe.doFinal(address, 0);
+            return Base58Check.encode(address, true);
+        } catch (NoSuchAlgorithmException NSAE) {}
+        return "";
     }
     
     public static String getPublicKeyAddress() {

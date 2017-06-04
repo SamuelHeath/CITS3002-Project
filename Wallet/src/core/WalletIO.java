@@ -1,3 +1,5 @@
+package core;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.File;
@@ -9,11 +11,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import javax.xml.bind.DatatypeConverter;
-import net.Message;
 
 /**
  * Handles the IO to what ever file it has.
- * @author Samuel James Serwan Heath
+ * @author Samuel James Serwan Heath & Nerces
  */
 public class WalletIO {
     
@@ -68,7 +69,8 @@ public class WalletIO {
     }
     
     /**
-     * @return                  The current balance of the wallet software.
+     * Updates the balance using the entire blockchain
+     * @return                  The current balance this user has.
      */
     public static double getBalance() {
         double balance = 0.0;
@@ -91,7 +93,6 @@ public class WalletIO {
             }
         }
         writeBlockChain(new File(CHAIN_FILENAME));
-        Wallet.balance = balance;
         return balance;
     }
     
@@ -150,18 +151,19 @@ public class WalletIO {
      * @param s                     Takes a raw string from an incoming BCRS msg
      * in which the raw data is a json representation of the current block chain.
      */
-    public static void readBlockChainFromStream(String s) {
+    public void readBlockChainFromStream(String s) {
         Gson g = new Gson();
         BlockChain bc = new BlockChain();
         block_chain = g.fromJson(s, bc.getClass());
         System.out.println("Latest Block Hash: "+block_chain.getLastHash());
+        Wallet.balance = getBalance();
     }
     
     /**
      * @param s                     Takes a raw string from an incoming BKRS msg
      * where the raw string data attached is a json representation of a Block[].
      */
-    public static void readBlocksFromStream(String s) {
+    public void readBlocksFromStream(String s) {
         Gson g = new Gson();
         Block[] b = g.fromJson(s, Block[].class);
         for (int i = b.length-1; i >= 0; i--) {
@@ -175,6 +177,6 @@ public class WalletIO {
             } catch (Exception E) {}
         }
         //Updates the balance based on these new blocks.
-        updateBalance(b);
+        Wallet.balance = updateBalance(b);
     }
 }

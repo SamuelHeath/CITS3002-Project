@@ -10,7 +10,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 
 /**
- * @author Samuel Heath
+ * @author Samuel Heath & Nerces
  */
 public class ConnectionWorker implements Runnable {
     

@@ -1,18 +1,16 @@
-import com.google.gson.Gson;
+package core;
+
 import java.io.*;
 import java.net.InetAddress;
-import java.util.Scanner;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.SSLSession;
-
-import net.Message;
 
 //"-Djavax.net.ssl.trustStore=bin/Analysts/publicKey.jks"
 
 /**
  * Creates a connection with the miner and then passes information to the Wallet.
- * @author Samuel Heath
+ * @author Samuel Heath & Nerces
  */
 public class WalletConnection {
     
@@ -95,14 +93,12 @@ public class WalletConnection {
     private static void updateWallet(Message m) {
         if (m.getType().equals("BCRS")) {
             w.getIO().readBlockChainFromStream(m.getRawData());
-            String balance = String.format("%.8f", WalletIO.getBalance());
-            System.out.println("\nBalance: "+ balance);
             Wallet.setResponse(true);
+            System.out.println("\nBalance: "+String.format("%.8f", w.balance));
         } else {
             w.getIO().readBlocksFromStream(m.getRawData());
-            String balance = String.format("%.8f", WalletIO.getBalance());
-            System.out.println("\nBalance: "+balance);
             Wallet.setResponse(true);
+            System.out.println("\nBalance: "+String.format("%.8f", w.balance));
         }
         
     }

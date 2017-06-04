@@ -13,7 +13,7 @@ import javax.xml.bind.DatatypeConverter;
 /**
  * Handles the reading and writing of the serializable block-chain whilst also
  * facilitating the exportation to other formats e.g. xml and json.
- * @author Samuel Heath
+ * @author Samuel Heath & Nerces
  */
 public class MinerIO {
     

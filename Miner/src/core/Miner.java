@@ -9,7 +9,7 @@ import javax.xml.bind.DatatypeConverter;
 /**
  * Miner which assembles blocks from a single transaction and performs calculations
  * to find the hash of the block.
- * @author Samuel Heath
+ * @author Samuel Heath & Nerces
  */
 public class Miner implements Runnable {
     
@@ -57,8 +57,8 @@ public class Miner implements Runnable {
         System.out.printf("\nMerkel Root: 0x%s\n",b.getMerkleRoot());
         
         //Following two lines reduces size of byte arrays significantly.
-        byte[] merkleRoot = b.getMerkleRoot().getBytes(); 
-        byte[] prevHash = b.getPreviousHash().getBytes();
+        byte[] merkleRoot = DatatypeConverter.parseHexBinary(b.getMerkleRoot()); 
+        byte[] prevHash = DatatypeConverter.parseHexBinary(b.getPreviousHash());
         byte[] const_header_bytes = concatByteArr(prevHash,merkleRoot);
         
         byte[] header_bytes = blockHeader2Bytes(b,const_header_bytes);
