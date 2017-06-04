@@ -1,23 +1,14 @@
 package core;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 
 /**
  *
- * @author Samuel Heath & Nerces
+ * @author Nerces Kahwajian – 215922645	& Samuel Heath – 21725083
  */
 public class Server implements Runnable {
     
@@ -72,7 +63,7 @@ public class Server implements Runnable {
     private Boolean hasStopped() { return this.server_stop; }
     
     /**
-     * Initialises the server socket.
+     * Initialises the server socket that accepts clients.
      */
     private void init() {
         try {
@@ -87,8 +78,6 @@ public class Server implements Runnable {
             ServerSock = (SSLServerSocket) serverSocketFactory.createServerSocket(NETWORK_PORT);
             ServerSock.setEnabledCipherSuites(ServerSock.getSupportedCipherSuites());
             ServerSock.setNeedClientAuth(true);
-            
-            //ServerSock.setNeedClientAuth(true);
             
             printServerInformation();
         
@@ -115,10 +104,10 @@ public class Server implements Runnable {
     }
     
     private void printServerInformation() {
-        System.out.println("Allows SSL Sockets: " + this.ServerSock.getEnableSessionCreation());
+        System.out.println("\nAllows SSL Sockets: " + this.ServerSock.getEnableSessionCreation());
         System.out.println("Use client mode: "+this.ServerSock.getUseClientMode());
         System.out.println("Need authentication: "+this.ServerSock.getNeedClientAuth());
-        System.out.println("Want authentication: "+this.ServerSock.getWantClientAuth());
+        System.out.printf("Want authentication: %s\n",this.ServerSock.getWantClientAuth());
     }
     
 }

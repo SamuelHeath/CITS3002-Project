@@ -10,10 +10,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import javax.xml.bind.DatatypeConverter;
+
 /**
  * Handles the reading and writing of the serializable block-chain whilst also
  * facilitating the exportation to other formats e.g. xml and json.
- * @author Samuel Heath & Nerces
+ * @author Nerces Kahwajian – 215922645	& Samuel Heath – 21725083
  */
 public class MinerIO {
     
@@ -28,7 +29,7 @@ public class MinerIO {
                 //Reads serialized blockchain stored on computer
                 System.out.println("Reading Block Chain");
                 block_chain = readBlockChain(f);
-                System.out.println("Size: " + block_chain.getBlocks().size());
+                System.out.println("Block Chain Size: " + block_chain.getBlocks().size());
             } catch (FileNotFoundException FNFE) {}
         } else {
             byte[] zeroBytes = new byte[32]; //Initially has all 0's.
@@ -48,7 +49,6 @@ public class MinerIO {
             block_chain = new BlockChain(b);
             MinerIO.writeBlockChain(f);
         }
-
     }
     
     public String getHex(byte[] bytes) {
@@ -56,7 +56,7 @@ public class MinerIO {
     }
     
     /**
-     * @return 
+     * @return                  
      */
     public static BlockChain getBlockChain() { return block_chain; }
     
@@ -68,8 +68,7 @@ public class MinerIO {
     }
     
     /**
-     * 
-     * @param file 
+     * @param file                  The where to store the serialized block chain.
      */
     private static void writeBlockChain(File file) {
         try {
@@ -86,11 +85,18 @@ public class MinerIO {
         } catch (IOException IOE) { IOE.printStackTrace(); } 
     }
     
+    /**
+     * @return                  Block Chain as a single string to send to Wallets.
+     */
     public static String getBlockChainAsJson() {
         Gson g = new Gson();
         return g.toJson(block_chain, block_chain.getClass());
     }
     
+    /**
+     * Writes the Block Chain object to json.
+     * @param f                     The file in which to store the json representation.
+     */
     private static void writeBlockChain2Json(File f) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         try (FileWriter writer = new FileWriter(f)) {

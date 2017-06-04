@@ -9,12 +9,13 @@ import javax.xml.bind.DatatypeConverter;
 /**
  * Miner which assembles blocks from a single transaction and performs calculations
  * to find the hash of the block.
- * @author Samuel Heath & Nerces
+ * @author Nerces Kahwajian – 215922645	& Samuel Heath – 21725083
  */
 public class Miner implements Runnable {
     
     private static String coinBaseAddress;
     private static int proof_difficulty = 3; //Default difficulty for miner
+    private static boolean use_nibble = true;
     private static ArrayList<Transaction> transactions = new ArrayList(1);
     
     /**
@@ -23,7 +24,7 @@ public class Miner implements Runnable {
     public Miner() {
         KeyPairGen.readKeys();
         coinBaseAddress = KeyPairGen.getPublicKeyAddress();
-        System.out.println("Coin Base Address: "+coinBaseAddress);
+        System.out.printf("\nCoin Base Address: %s\n",coinBaseAddress);
         //GET CURRENT BLOCK FROM BLOCKCHAIN. SEE MINERIO
     }
     
@@ -37,12 +38,14 @@ public class Miner implements Runnable {
         } else proof_difficulty = difficulty;
         KeyPairGen.readKeys();
         coinBaseAddress = KeyPairGen.getPublicKeyAddress();
-        System.out.println(coinBaseAddress);
+        System.out.printf("\nCoin Base Address: %s\n",coinBaseAddress);
     }
+    
+    public void useNibbleInProof(boolean b) { use_nibble = b; }
     
     @Override
     public void run() {
-        System.out.println("Miner Difficulty: " + proof_difficulty);
+        System.out.printf("Miner Difficulty: %s\n", proof_difficulty);
     }
       
     /**
@@ -68,8 +71,7 @@ public class Miner implements Runnable {
         try {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
             byte[] double_hash = sha256.digest(sha256.digest(header_bytes));
-            System.out.print("Start Hash: ");
-            System.out.println(DatatypeConverter.printHexBinary(double_hash));
+            System.out.printf("Start Hash:  0x%s\n",DatatypeConverter.printHexBinary(double_hash));
             System.out.println("---------------------------------------");
             long init_time2 = System.currentTimeMillis();
             long numHashes = 1; // Stores a count of the number of hashes
@@ -100,7 +102,7 @@ public class Miner implements Runnable {
             try {
                 b.setBlockNumber(MinerIO.getBlockChain().getLatestBlockNumber()+1);
             } catch (Exception E) { System.exit(1); }
-            System.out.println("End Hash:   " + b.getHash());
+            System.out.printf("End Hash: 0x%s\n",b.getHash());
             long timeDiff = (System.currentTimeMillis() - init_time)/1000;
             System.out.println("Time: " + (float)(timeDiff)/60 + " min " + "Average Hashes/s: " + total_hashes/timeDiff + " Nonce: " + b.getNonce());
         } catch (NoSuchAlgorithmException NSAE) {}
@@ -117,7 +119,9 @@ public class Miner implements Runnable {
         for (int i = 0; i < proof_difficulty; i++) {
             if (hash[i] != 0) return false;
         }
-        if ((hash[proof_difficulty] >> 4) != 0) return false;
+        if (use_nibble) {
+            return (hash[proof_difficulty] >> 4 ) == 0;
+        }
         return true;
     }
     
@@ -221,8 +225,8 @@ public class Miner implements Runnable {
         // Atleast 1 needed to stop negative values from the log calculation
         if (numZeros == 0 ) { numZeros = 1; }
         //The default difficulty results in a reward of 3 coins, whereas max difficulty
-        // (32 -> 64 0's as its in hex) will get 10 coins.
-        return Math.floor(Math.log(numZeros)*1.541695028);
+        // (31.5 -> 63 0's as its in hex) will get 6 coins.
+        return Math.floor(Math.log(numZeros)*1.541695025);
     }
     
     /**
@@ -267,7 +271,7 @@ public class Miner implements Runnable {
         System.out.println("\nPrevious Hash: "+currBlock.getPreviousHash());
         System.out.println("Coin Base Address: "+currBlock.getCoinBase());
         currBlock = proofOfWork(currBlock);
-        //Change the coinbase reward
+        //Change the coinbase reward based on the "difficulty" of the hash found.
         currBlock.getTransactions()[0].setTransactionAmount(rewardAmount(currBlock));
         MinerIO.getBlockChain().addBlock(currBlock);
         MinerIO.writeBlockChain();
