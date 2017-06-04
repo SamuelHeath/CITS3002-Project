@@ -14,7 +14,7 @@ import javax.xml.bind.DatatypeConverter;
 
 /**
  * Handles the IO to what ever file it has.
- * @author Samuel James Serwan Heath & Nerces
+ * @author Nerces Kahwajian – 215922645	& Samuel Heath – 21725083
  */
 public class WalletIO {
     

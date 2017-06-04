@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 /**
  * 
- * @author Samuel Heath & Nerces
+ * @author Nerces Kahwajian – 215922645	& Samuel Heath – 21725083
  */
 public class Wallet implements Runnable {
     
@@ -23,14 +23,8 @@ public class Wallet implements Runnable {
         WalletConnection.sendMessage(new Message("RQBC;"));
         
         //Waits for a response
-        long time = System.currentTimeMillis();
         while (!update) {
-            if (System.currentTimeMillis() - time > 20000) { 
-                System.out.println("Connection Timeout, no response");
-            }
         }
-        
-        System.out.println("\nBalance: "+String.format("%.8f", balance));
         
         //Sends the main message required if its not an update message.
         if (msg.getType().equals("TX")) {
@@ -47,18 +41,6 @@ public class Wallet implements Runnable {
                 System.out.println("Sending Transaction to Miner!");
             } else { System.out.println("Couldn't verify signature."); System.exit(-1); }
         } else { System.exit(1); }
-        
-        update = false;
-        
-        time = System.currentTimeMillis();
-        //Thread waits until the Miner responds from the TX.
-        while (!update) {
-            // Exits if the transaction takes longer than 10 mins -- it shouldnt.
-            if (time - System.currentTimeMillis() > 600000) { 
-                System.out.println("Transaction took too long, update wallet and transaction should have finished.");
-                System.exit(1);
-            }
-        }
     }
     
     /**

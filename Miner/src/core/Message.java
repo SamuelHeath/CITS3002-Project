@@ -2,7 +2,7 @@ package core;
 
 /**
  * 
- * @author Samuel Heath & Nerces
+ * @author Nerces Kahwajian – 215922645	& Samuel Heath – 21725083
  */
 public class Message {
 

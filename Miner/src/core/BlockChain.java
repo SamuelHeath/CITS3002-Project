@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author Samuel Heath & Necres
+ * @author Nerces Kahwajian – 215922645	& Samuel Heath – 21725083
  */
 public class BlockChain implements Serializable {
     

@@ -10,7 +10,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 
 /**
- * @author Samuel Heath & Nerces
+ * @author Nerces Kahwajian – 215922645	& Samuel Heath – 21725083
  */
 public class ConnectionWorker implements Runnable {
     
@@ -27,7 +27,7 @@ public class ConnectionWorker implements Runnable {
             clientSock.setNeedClientAuth(true);
             clientSock.startHandshake();
             SSLSession sslSession = clientSock.getSession();
-            System.out.println(sslSession.getProtocol());
+            System.out.println("\nWallet Connected With: "+sslSession.getProtocol());
             
             InputStream inputstream = clientSock.getInputStream();
             InputStreamReader inputstreamreader = new InputStreamReader(inputstream);
@@ -42,12 +42,9 @@ public class ConnectionWorker implements Runnable {
                 switch (m.getType()) {
                     case "RQBC":
                             Message response = Miner.blockChainRequested(m);
-                            if (response != null) {
-                                pwrite.println(response.toString());
-                            } else {
-                                System.out.println("No Response Provided :)");
-                                //Unneeded but just used to show im making a message.
-                                pwrite.println(new Message("NBKN;").toString());
+                            pwrite.println(response.toString());
+                            if (response.getType().equals("NBKN")) {
+                                System.out.println("That wallet is up to date :)");
                             }
                             //Will always need to flush the writer.
                             pwrite.flush();
@@ -65,7 +62,7 @@ public class ConnectionWorker implements Runnable {
                 }
             }
         } catch (IOException IOE) {
-            Server.getConnections().remove(this.clientSock);
+            
         }
     }
     

@@ -1,5 +1,6 @@
 package core;
 
+import static core.Wallet.balance;
 import java.io.*;
 import java.net.InetAddress;
 import javax.net.ssl.SSLSocket;
@@ -10,7 +11,7 @@ import javax.net.ssl.SSLSession;
 
 /**
  * Creates a connection with the miner and then passes information to the Wallet.
- * @author Samuel Heath & Nerces
+ * @author Nerces Kahwajian – 215922645	& Samuel Heath – 21725083
  */
 public class WalletConnection {
     
@@ -36,12 +37,12 @@ public class WalletConnection {
                 
                 sslsocket.setNeedClientAuth(true);
                 sslsocket.startHandshake();
-                System.out.println("Connected to Miner\n");
+                System.out.println("\nConnected to Miner");
                 
-                System.out.println("Need client authentication = "+sslsocket.getNeedClientAuth());
+                System.out.println("Need client authentication: "+sslsocket.getNeedClientAuth());
 		SSLSession sslsesh = sslsocket.getSession();
-		System.out.println("Cipher suite = "+sslsesh.getCipherSuite());
-		System.out.println("Protocol = "+sslsesh.getProtocol() + "\n");
+		System.out.println("Cipher suite: "+sslsesh.getCipherSuite());
+		System.out.println("Protocol: "+sslsesh.getProtocol() + "\n");
                 
                 InputStream serverstream = sslsocket.getInputStream();
                 InputStreamReader serverstreamreader = new InputStreamReader(serverstream);
@@ -72,6 +73,7 @@ public class WalletConnection {
                             System.out.println("I'm up to date yay :)");
                             //If the miner says there is nothing needed to change,
                             //then break the while loop and just chill out.
+                            System.out.println("\nBalance: "+String.format("%.8f", balance));
                             Wallet.setResponse(true);
                         default:
                             System.out.println(m.getRawData());
